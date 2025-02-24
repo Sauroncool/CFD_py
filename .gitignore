@@ -1,0 +1,5 @@
+# Inside .gitignore
+.idea/
+__pycache__/
+*.iml
+
