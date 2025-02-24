@@ -57,12 +57,14 @@ plt.plot(
 
 # Highlight corresponding points a, b, c, d
 # Point a and d (inner boundary start/end)
-plt.scatter(x[0, 0], y[0, 0], color="purple", s=100, label="Point a/d")
-plt.text(x[0, 0], y[0, 0] + 0.5, "a/d", fontsize=10, color="purple")
+plt.scatter(x[0, 0], y[0, 0], color="purple", s=80, label="Point a/b")
+plt.text(x[0, 0], y[0, 0] + 0.5, "b", fontsize=14, color="black")
+plt.text(x[0, 0], y[0, 0] - 1.0, "a", fontsize=14, color="black")
 
 # Point b and c (outer boundary start/end)
-plt.scatter(x[-1, 0], y[-1, 0], color="green", s=100, label="Point b/c")
-plt.text(x[-1, 0], y[-1, 0] + 0.5, "b/c", fontsize=10, color="green")
+plt.scatter(x[-1, 0], y[-1, 0], color="green", s=80, label="Point d/c")
+plt.text(x[-1, 0], y[-1, 0] + 0.5, "c", fontsize=14, color="black")
+plt.text(x[-1, 0], y[-1, 0] - 1.0, "d", fontsize=14, color="black")
 
 # Formatting the plot
 plt.gca().set_aspect("equal")
@@ -70,6 +72,7 @@ plt.title("Transfinite Interpolation Grid (101 × 81)")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.grid(True, linestyle="--", alpha=0.5)
+
 # Save the plot
 plt.savefig("24M0003.png")
 plt.show()
