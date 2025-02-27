@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def solve_laplace(xi, eta, U_inf=1.0, tol=1e-5, max_iter=10000):
+def solve_laplace(xi, eta, x, U_inf=1.0, tol=1e-5, max_iter=10000):
     """
     Solves Laplace's equation in computational (ξ, η) space using Gauss-Seidel method.
     Args:
@@ -15,9 +15,10 @@ def solve_laplace(xi, eta, U_inf=1.0, tol=1e-5, max_iter=10000):
     """
     nx, ny = xi.shape
     phi = np.zeros((nx, ny))
+    phi[:, :] = U_inf * x[:, :]  # Far-field boundary (η = 1)
 
     # Dirichlet BC: Far-field potential φ = U_inf * ξ
-    phi[:, -1] = U_inf * xi[:, -1]  # Far-field boundary (η = 1)
+    phi[:, -1] = U_inf * x[:, -1]  # Far-field boundary (η = 1)
 
     # Iterative solver
     for iteration in range(max_iter):
@@ -29,8 +30,12 @@ def solve_laplace(xi, eta, U_inf=1.0, tol=1e-5, max_iter=10000):
                     phi[i + 1, j] + phi[i - 1, j] + phi[i, j + 1] + phi[i, j - 1]
                 )
 
-        # Neumann BC: No-penetration (∂φ/∂n = 0) at the ellipse boundary
-        phi[0, :] = phi[1, :]  # Bottom boundary (ellipse)
+        # Improved Neumann BC: No-penetration (∂φ/∂η = 0) at the ellipse boundary
+        phi[0, :] = phi[1, :]  # Ellipse boundary (η = 0)
+
+        # Debugging print every 1000 iterations
+        if iteration % 1000 == 0:
+            print(f"Iteration {iteration}: max change = {np.max(np.abs(phi - phi_old))}")
 
         # Convergence check
         if np.max(np.abs(phi - phi_old)) < tol:
@@ -40,6 +45,7 @@ def solve_laplace(xi, eta, U_inf=1.0, tol=1e-5, max_iter=10000):
         print("Did not converge within the maximum number of iterations.")
 
     return phi
+
 
 
 def compute_velocity(phi, xi, eta):
@@ -66,15 +72,3 @@ def compute_velocity(phi, xi, eta):
     )
 
     return u, v
-
-
-# Example usage (to be removed in final integration)
-if __name__ == "__main__":
-    from grid_generation import generate_grid
-
-    nx, ny = 101, 81
-    a, b = 1, 0.5
-    R_far = 20
-    xi, eta, x, y = generate_grid(nx, ny, a, b, R_far)
-    phi = solve_laplace(xi, eta)
-    u, v = compute_velocity(phi, xi, eta)

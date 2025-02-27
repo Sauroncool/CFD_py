@@ -12,30 +12,30 @@ def generate_grid(num_xi, num_eta, a, b, R_far):
         b (float): Semi-minor axis of the ellipse.
         R_far (float): Radius for the far-field boundary.
     Returns:
+        xi (ndarray): Computational grid (ξ-coordinates, normalized 0 to 1).
+        eta (ndarray): Computational grid (η-coordinates, normalized 0 to 1).
         x (ndarray): Grid point x-coordinates.
         y (ndarray): Grid point y-coordinates.
     """
-    xi = np.linspace(0, 1, num_xi)
-    eta = np.linspace(0, 1, num_eta)
+    xi = np.linspace(0, 1, num_xi)  # Computational domain in ξ-direction
+    eta = np.linspace(0, 1, num_eta)  # Computational domain in η-direction
 
-    x = np.zeros((num_eta, num_xi))
-    y = np.zeros((num_eta, num_xi))
+    XI, ETA = np.meshgrid(xi, eta)  # 2D computational coordinates
 
-    for i in range(num_eta):
-        for j in range(num_xi):
-            # Parametric equations for the ellipse boundary
-            x_inner = a * np.cos(2 * np.pi * xi[j])  # Should return a scalar
-            y_inner = b * np.sin(2 * np.pi * xi[j])  # Should return a scalar
+    # Generate theta values for the ellipse boundary
+    theta = np.linspace(0, 2 * np.pi, num_xi)
 
-            x_outer = R_far * np.cos(2 * np.pi * xi[j])  # Should return a scalar
-            y_outer = R_far * np.sin(2 * np.pi * xi[j])  # Should return a scalar
+    # Inner and outer boundary points
+    x_inner = a * np.cos(theta)
+    y_inner = b * np.sin(theta)
+    x_outer = R_far * np.cos(theta)
+    y_outer = R_far * np.sin(theta)
 
-            # Transfinite interpolation
-            x[i, j] = (1 - eta[i]) * x_inner + eta[i] * x_outer
-            y[i, j] = (1 - eta[i]) * y_inner + eta[i] * y_outer
+    # Transfinite Interpolation (Vectorized)
+    x = (1 - ETA) * x_inner[np.newaxis, :] + ETA * x_outer[np.newaxis, :]
+    y = (1 - ETA) * y_inner[np.newaxis, :] + ETA * y_outer[np.newaxis, :]
 
-    xi, eta = np.meshgrid(xi, eta)
-    return xi, eta, x, y
+    return XI, ETA, x, y
 
 
 def plot_grid(x, y):
@@ -45,7 +45,7 @@ def plot_grid(x, y):
         x (ndarray): x-coordinates of the grid.
         y (ndarray): y-coordinates of the grid.
     """
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(10, 10))
     for i in range(x.shape[0]):
         plt.plot(x[i, :], y[i, :], "b")  # ξ-direction
     for j in range(x.shape[1]):
@@ -58,10 +58,15 @@ def plot_grid(x, y):
     plt.show()
 
 
-# Example usage (to be removed in final integration)
+# Example usage
 # if __name__ == "__main__":
-#   nx, ny = 101, 81
-#  a, b = 1, 0.5
-# R_far = 20
-# x, y = generate_grid(nx, ny, a, b, R_far)
-# plot_grid(x, y)
+#     nx, ny = 101, 81  # Grid resolution
+#     a, b = 1, 0.5  # Ellipse parameters
+#     R_far = 20  # Far-field boundary
+
+#     xi, eta, x, y = generate_grid(nx, ny, a, b, R_far)
+#     plot_grid(x, y)
+
+#     # Example: Mapping from computational to physical coordinates
+#     i, j = 40, 50  # Sample computational index
+#     print(f"At (xi, eta) = ({xi[i, j]:.3f}, {eta[i, j]:.3f}), physical coordinates are (x, y) = ({x[i, j]:.3f}, {y[i, j]:.3f})")
