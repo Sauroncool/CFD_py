@@ -6,11 +6,11 @@ import numpy as np
 num_xi = 101  # Number of points in the ξ-direction
 num_eta = 81  # Number of points in the η-direction
 
-# Define the semi-major and semi-minor axes for the ellipse
+# Define the semi-major and semi-minor axes for the ellipse (inner boundary)
 a = 1.0
 b = 0.5
 
-# Define the radius for the outer boundary (far field)
+# Define the radius for the circle (outer boundary)
 R_outer = 20.0
 
 # Generate ξ and η values
@@ -24,19 +24,9 @@ y = np.zeros((num_eta, num_xi))
 # Compute the grid points using TFI
 for i in range(num_eta):
     for j in range(num_xi):
-        theta = 2 * np.pi * xi[j]
-
-        # Inner boundary (ellipse)
-        x_inner = a * np.cos(theta)
-        y_inner = b * np.sin(theta)
-
-        # Outer boundary (circle)
-        x_outer = R_outer * np.cos(theta)
-        y_outer = R_outer * np.sin(theta)
-
         # TFI mapping
-        x[i, j] = (1 - eta[i]) * x_inner + eta[i] * x_outer
-        y[i, j] = (1 - eta[i]) * y_inner + eta[i] * y_outer
+        x[i, j] = np.cos(2 * np.pi * xi[j]) * ((1 - eta[i]) * a + eta[i] * R_outer)
+        y[i, j] = np.sin(2 * np.pi * xi[j]) * ((1 - eta[i]) * b + eta[i] * R_outer)
 
 # Plot the grid
 plt.figure(figsize=(10, 8))
@@ -57,12 +47,12 @@ plt.plot(
 
 # Highlight corresponding points a, b, c, d
 # Point a and d (inner boundary start/end)
-plt.scatter(x[0, 0], y[0, 0], color="purple", s=80, label="Point a/b")
+plt.scatter(x[0, 0], y[0, 0], color="purple", s=40, label="Point a/b")
 plt.text(x[0, 0], y[0, 0] + 0.5, "b", fontsize=14, color="black")
 plt.text(x[0, 0], y[0, 0] - 1.0, "a", fontsize=14, color="black")
 
 # Point b and c (outer boundary start/end)
-plt.scatter(x[-1, 0], y[-1, 0], color="green", s=80, label="Point d/c")
+plt.scatter(x[-1, 0], y[-1, 0], color="green", s=40, label="Point d/c")
 plt.text(x[-1, 0], y[-1, 0] + 0.5, "c", fontsize=14, color="black")
 plt.text(x[-1, 0], y[-1, 0] - 1.0, "d", fontsize=14, color="black")
 
