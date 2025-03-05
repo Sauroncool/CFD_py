@@ -74,5 +74,5 @@ plt.ylabel("y")
 plt.grid(True, linestyle="--", alpha=0.5)
 
 # Save the plot
-plt.savefig("24M0003.png")
+plt.savefig("generated_grid.png")
 plt.show()
