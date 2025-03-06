@@ -1,4 +1,3 @@
-# Code for grid generation
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,7 +23,6 @@ y = np.zeros((num_eta, num_xi))
 # Compute the grid points using TFI
 for i in range(num_eta):
     for j in range(num_xi):
-        # TFI mapping
         x[i, j] = np.cos(2 * np.pi * xi[j]) * ((1 - eta[i]) * a + eta[i] * R_outer)
         y[i, j] = np.sin(2 * np.pi * xi[j]) * ((1 - eta[i]) * b + eta[i] * R_outer)
 
@@ -45,24 +43,20 @@ plt.plot(
     label="Imaginary Cut (θ = 0)",
 )
 
-# Highlight corresponding points a, b, c, d
-# Point a and d (inner boundary start/end)
-plt.scatter(x[0, 0], y[0, 0], color="purple", s=40, label="Point a/b")
+# Highlight Point a and b
+plt.scatter(x[0, 0], y[0, 0], color="purple", s=80, label="Point a/b")
 plt.text(x[0, 0], y[0, 0] + 0.5, "b", fontsize=14, color="black")
 plt.text(x[0, 0], y[0, 0] - 1.0, "a", fontsize=14, color="black")
 
-# Point b and c (outer boundary start/end)
-plt.scatter(x[-1, 0], y[-1, 0], color="green", s=40, label="Point d/c")
+# Highlight Point c and d
+plt.scatter(x[-1, 0], y[-1, 0], color="green", s=80, label="Point d/c")
 plt.text(x[-1, 0], y[-1, 0] + 0.5, "c", fontsize=14, color="black")
 plt.text(x[-1, 0], y[-1, 0] - 1.0, "d", fontsize=14, color="black")
 
-# Formatting the plot
 plt.gca().set_aspect("equal")
 plt.title("Transfinite Interpolation Grid (101 × 81)")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.grid(True, linestyle="--", alpha=0.5)
-
-# Save the plot
 plt.savefig("generated_grid.png")
 plt.show()
