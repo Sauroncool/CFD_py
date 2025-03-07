@@ -1,72 +1,49 @@
+# Generating the grid using Transfinite Interpolation
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-def generate_grid(num_xi, num_eta, a, b, R_far):
-    """
-    Generates grid points using Transfinite Interpolation.
-    Args:
-        num_xi (int): Number of grid points in the ξ-direction.
-        num_eta (int): Number of grid points in the η-direction.
-        a (float): Semi-major axis of the ellipse.
-        b (float): Semi-minor axis of the ellipse.
-        R_far (float): Radius for the far-field boundary.
-    Returns:
-        xi (ndarray): Computational grid (ξ-coordinates, normalized 0 to 1).
-        eta (ndarray): Computational grid (η-coordinates, normalized 0 to 1).
-        x (ndarray): Grid point x-coordinates.
-        y (ndarray): Grid point y-coordinates.
-    """
-    xi = np.linspace(0, 1, num_xi)  # Computational domain in ξ-direction
-    eta = np.linspace(0, 1, num_eta)  # Computational domain in η-direction
+# define the grid size
+def grid_generation(num_xi, num_eta, a, b, R_outer):
+    # Generate xi and eta values
+    xi = np.linspace(0, 1, num_xi)
+    eta = np.linspace(0, 1, num_eta)
 
-    XI, ETA = np.meshgrid(xi, eta)  # 2D computational coordinates
+    # Initialize the x and y grid arrays
+    x = np.zeros((num_xi, num_eta))
+    y = np.zeros((num_xi, num_eta))
 
-    # Generate theta values for the ellipse boundary
-    theta = np.linspace(0, 2 * np.pi, num_xi)
+    # Compute the x and y values
+    for i in range(num_xi):
+        for j in range(num_eta):
+            x[i, j] = np.cos(2 * np.pi * xi[i]) * ((1 - eta[j]) * a + eta[j] * R_outer)
+            y[i, j] = np.sin(2 * np.pi * xi[i]) * ((1 - eta[j]) * b + eta[j] * R_outer)
 
-    # Inner and outer boundary points
-    x_inner = a * np.cos(theta)
-    y_inner = b * np.sin(theta)
-    x_outer = R_far * np.cos(theta)
-    y_outer = R_far * np.sin(theta)
-
-    # Transfinite Interpolation (Vectorized)
-    x = (1 - ETA) * x_inner[np.newaxis, :] + ETA * x_outer[np.newaxis, :]
-    y = (1 - ETA) * y_inner[np.newaxis, :] + ETA * y_outer[np.newaxis, :]
-
-    return XI, ETA, x, y
+    return x, y
 
 
+# Plot the grid
 def plot_grid(x, y):
-    """
-    Plots the generated grid.
-    Args:
-        x (ndarray): x-coordinates of the grid.
-        y (ndarray): y-coordinates of the grid.
-    """
-    plt.figure(figsize=(10, 10))
-    for i in range(x.shape[0]):
-        plt.plot(x[i, :], y[i, :], "b")  # ξ-direction
-    for j in range(x.shape[1]):
-        plt.plot(x[:, j], y[:, j], "r")  # η-direction
+    plt.figure()
+    plt.plot(x, y, "b-", linewidth=0.5)
+    plt.plot(x.T, y.T, "r", linewidth=0.5)
+    plt.axis("equal")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.title("Grid Generated using Transfinite Interpolation")
-    plt.gca().set_aspect("equal")
-    plt.savefig("grid.png")
+    plt.grid(linestyle="--", alpha=0.5)
     plt.show()
 
 
-# Example usage
-# if __name__ == "__main__":
-#     nx, ny = 101, 81  # Grid resolution
-#     a, b = 1, 0.5  # Ellipse parameters
-#     R_far = 20  # Far-field boundary
+if __name__ == "__main__":
+    # Define the grid size
+    num_xi = 101
+    num_eta = 81
+    a = 1.0
+    b = 0.5
+    R_outer = 20.0
 
-#     xi, eta, x, y = generate_grid(nx, ny, a, b, R_far)
-#     plot_grid(x, y)
+    # Generate the grid
+    x, y = grid_generation(num_xi, num_eta, a, b, R_outer)
 
-#     # Example: Mapping from computational to physical coordinates
-#     i, j = 40, 50  # Sample computational index
-#     print(f"At (xi, eta) = ({xi[i, j]:.3f}, {eta[i, j]:.3f}), physical coordinates are (x, y) = ({x[i, j]:.3f}, {y[i, j]:.3f})")
+    # Plot the grid
+    plot_grid(x, y)

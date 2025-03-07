@@ -1,51 +1,36 @@
+# Description: Solves Laplace's equation in computational (ξ, η) space using Finite Difference method.
 import numpy as np
 
 
-def solve_laplace(xi, eta, x, U_inf=1.0, tol=1e-5, max_iter=10000):
-    """
-    Solves Laplace's equation in computational (ξ, η) space using Gauss-Seidel method.
-    Args:
-        xi (ndarray): ξ-coordinates from grid generation.
-        eta (ndarray): η-coordinates from grid generation.
-        U_inf (float): Free stream velocity.
-        tol (float): Convergence tolerance.
-        max_iter (int): Maximum number of iterations.
-    Returns:
-        phi (ndarray): Potential field.
-    """
-    nx, ny = xi.shape
-    phi = np.zeros((nx, ny))
-    phi[:, :] = U_inf * x[:, :]  # Far-field boundary (η = 1)
+def derivates(phi, del_xi, del_eta):
+    phi_xi = (phi[1:, :] - phi[:-1, :]) / del_xi
+    phi_eta = (phi[:, 1:] - phi[:, :-1]) / del_eta
+    phi_xi_xi = (phi[2:, :] - 2 * phi[1:-1, :] + phi[:-2, :]) / del_xi**2
+    phi_eta_eta = (phi[:, 2:] - 2 * phi[:, 1:-1] + phi[:, :-2]) / del_eta**2
+    phi_xi_eta = (phi[2:, 2:] - phi[2:, :-2] - phi[:-2, 2:] + phi[:-2, :-2]) / (
+        4 * del_xi * del_eta
+    )
+    return phi_xi, phi_eta, phi_xi_xi, phi_eta_eta, phi_xi_eta
 
-    # Dirichlet BC: Far-field potential φ = U_inf * ξ
-    phi[:, -1] = U_inf * x[:, -1]  # Far-field boundary (η = 1)
 
-    # Iterative solver
-    for iteration in range(max_iter):
-        phi_old = phi.copy()
+def solve_laplace(xi, eta, num_xi, num_eta, U_inf=1.0, tol=1e-5, max_iter=10000):
+    phi = np.zeros((num_xi, num_eta))
 
-        for i in range(1, nx - 1):
-            for j in range(1, ny - 1):
-                phi[i, j] = 0.25 * (
-                    phi[i + 1, j] + phi[i - 1, j] + phi[i, j + 1] + phi[i, j - 1]
-                )
+    del_xi = xi[1] - xi[0]
+    del_eta = eta[1] - eta[0]
 
-        # Improved Neumann BC: No-penetration (∂φ/∂η = 0) at the ellipse boundary
-        phi[0, :] = phi[1, :]  # Ellipse boundary (η = 0)
+    # Solve Laplace's equation using Finite Difference method
+    for _ in range(max_iter):
+        phi_xi, phi_eta, phi_xi_xi, phi_eta_eta, phi_xi_eta = derivates(
+            phi, del_xi, del_eta
+        )
+        phi_new = 0.25 * (phi_xi_xi + phi_eta_eta)
 
-        # Debugging print every 1000 iterations
-        if iteration % 1000 == 0:
-            print(f"Iteration {iteration}: max change = {np.max(np.abs(phi - phi_old))}")
-
-        # Convergence check
-        if np.max(np.abs(phi - phi_old)) < tol:
-            print(f"Converged in {iteration} iterations.")
+        # Check for convergence
+        if np.linalg.norm(phi_new - phi) < tol:
             break
-    else:
-        print("Did not converge within the maximum number of iterations.")
 
-    return phi
-
+        phi = phi_new
 
 
 def compute_velocity(phi, xi, eta):
