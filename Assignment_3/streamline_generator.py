@@ -8,6 +8,7 @@ l_y = 4.0
 
 Δx = 0.1
 Δy = 0.1
+β = Δx / Δy
 
 nx = int(l_x / Δx)
 ny = int(l_y / Δy)
@@ -42,8 +43,8 @@ for k in range(iterations):
     ψ_old = ψ.copy()  # Store previous iteration
 
     # Update internal points using vectorized operations
-    ψ[1:-1, 1:-1] = 0.25 * (
-        ψ_old[:-2, 1:-1] + ψ_old[2:, 1:-1] + ψ_old[1:-1, :-2] + ψ_old[1:-1, 2:]
+    ψ[1:-1, 1:-1] = (1 / (2 * (1 + β**2))) * (
+        β**2 * (ψ[1:-1, 2:] + ψ[1:-1, 0:-2]) + (ψ[2:, 1:-1] + ψ[0:-2, 1:-1])
     )
 
     # Apply boundary conditions again (only needed outside update loop)
