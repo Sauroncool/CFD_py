@@ -72,3 +72,22 @@ plt.contourf(ψ.T, cmap="viridis")
 plt.colorbar(label="Streamfunction")
 plt.title("Streamfunction Contours")
 plt.show()
+
+# Compute velocity components from the streamfunction
+u = np.gradient(ψ, axis=1) / Δy  # u = ∂ψ/∂y
+v = -np.gradient(ψ, axis=0) / Δx  # v = -∂ψ/∂x
+
+# Create a grid for plotting
+x = np.linspace(0, l_x, nx)
+y = np.linspace(0, l_y, ny)
+X, Y = np.meshgrid(x, y)
+
+# Plot streamlines
+plt.figure(figsize=(10, 8))
+plt.streamplot(X, Y, u.T, v.T, color="b", density=2, linewidth=1, arrowsize=0.5)
+plt.contourf(X, Y, ψ.T, cmap="viridis", alpha=0.5)  # Overlay streamfunction contours
+plt.colorbar(label="Streamfunction")
+plt.title("Streamline Patterns")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
