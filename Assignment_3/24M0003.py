@@ -23,11 +23,11 @@ ny = int(l_y / Δy) + 1
 ψ[0, :] = ψ3  # Left
 ψ[:, -1] = ψ3  # Top
 # Bottom
-ψ[: int(1.1 * 1/ Δx), 0] = ψ3
-ψ[int(1.1 * 1/ Δx) :, 0] = ψ1
+ψ[: int(1.1 * 1 / Δx), 0] = ψ3
+ψ[int(1.1 * 1 / Δx) :, 0] = ψ1
 # Right
-ψ[-1, : int(1.0 * 1 / Δy)] = ψ1
-ψ[-1, int(1.1 * 1 / Δy) : int(1.9 * ny / l_y)] = ψ2
+ψ[-1, : int(1.1 * 1 / Δy)] = ψ1
+ψ[-1, int(1.1 * 1 / Δy) : int(2.0 * ny / l_y)] = ψ2
 ψ[-1, int(2.0 * 1 / Δy) :] = ψ3
 
 # Point Jacobi method
@@ -46,11 +46,11 @@ for k in range(iterations):
     ψ[0, :] = ψ3  # Left
     ψ[:, -1] = ψ3  # Top
     # Bottom
-    ψ[: int(1.1 * 1/ Δx), 0] = ψ3
-    ψ[int(1.1 * 1/ Δx) :, 0] = ψ1
+    ψ[: int(1.1 * 1 / Δx), 0] = ψ3
+    ψ[int(1.1 * 1 / Δx) :, 0] = ψ1
     # Right
-    ψ[-1, : int(1.0 * 1 / Δy)] = ψ1
-    ψ[-1, int(1.1 * 1 / Δy) : int(1.9 * ny / l_y)] = ψ2
+    ψ[-1, : int(1.1 * 1 / Δy)] = ψ1
+    ψ[-1, int(1.1 * 1 / Δy) : int(2.0 * ny / l_y)] = ψ2
     ψ[-1, int(2.0 * 1 / Δy) :] = ψ3
 
     # Convergence check
@@ -71,14 +71,14 @@ plt.title("Convergence Plot")
 plt.show()
 
 # Mirroring ψ about the right edge
-ψ = np.vstack((ψ,ψ[-2::-1, :]))
+ψ = np.vstack((ψ, ψ[-2::-1, :]))
 
 # Compute velocity components from the streamfunction
 u = np.gradient(ψ, axis=1) / Δy  # u = ∂ψ/∂y
 v = -np.gradient(ψ, axis=0) / Δx  # v = -∂ψ/∂ξ
 
 # Make grid for plotting streamlines
-x = np.linspace(0, 2*l_x, 2*nx-1)
+x = np.linspace(0, 2 * l_x, 2 * nx - 1)
 y = np.linspace(0, l_y, ny)
 X, Y = np.meshgrid(x, y)
 
@@ -90,7 +90,9 @@ plt.colorbar(label="Streamfunction")
 plt.title("Streamfunction Contours")
 plt.xlabel("x")
 plt.ylabel("y")
-plt.show()
+plt.savefig("streamfunction_symmetric.png")
+# plt.show()
+plt.close()
 
 # Plot streamlines
 plt.figure(figsize=(10, 8))
@@ -100,4 +102,16 @@ plt.colorbar(label="Streamfunction")
 plt.title("Streamline Patterns")
 plt.xlabel("x")
 plt.ylabel("y")
-plt.show()
+plt.savefig("streamline_symmetric.png")
+# plt.show()
+plt.close()
+
+print(ψ[: int(1.1 * 1 / Δx), 0])
+# Saving ψ.T to a text File
+# Stack X, Y, and ψ.T into a single array for saving
+# data = np.column_stack((X.ravel(), Y.ravel(), ψ.T.ravel()))
+
+# Save to a text file
+# np.savetxt(
+#    "psi_transposed_with_xy.txt", data, fmt="%.6f", header="x y psi", comments=""
+# )
