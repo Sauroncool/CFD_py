@@ -10,10 +10,10 @@ l_y = 4.0
 Δy = 0.1
 β = Δx / Δy
 
-nx = int(l_x / Δx)
-ny = int(l_y / Δy)
+nx = int(l_x / Δx) +1
+ny = int(l_y / Δy) +1
 
-ψ = np.ones((nx, ny)) * 0  # Initial guess
+ψ = np.ones((nx, ny)) * 100  # Initial guess
 
 ψ1 = 100
 ψ2 = 150
@@ -24,13 +24,13 @@ ny = int(l_y / Δy)
 ψ[-1, :] = ψ3  # Right
 ψ[:, -1] = ψ3  # Top
 # Bottom
-ψ[: int(1.0 * nx / l_x), 0] = ψ3
-ψ[int(1.1 * nx / l_x) : int(1.9 * nx / l_x), 0] = ψ1
-ψ[int(2.0 * nx / l_x) :, 0] = ψ3
+ψ[: int(1.0 * 1 / Δx), 0] = ψ3
+ψ[int(1.1 * 1 / Δx) : int(1.9 * 1 / Δx), 0] = ψ1
+ψ[int(2.0 * 1 / Δx) :, 0] = ψ3
 # Middle
-ψ[int(1.5 * nx / l_x), : int(1.1 * ny / l_y)] = ψ1
-ψ[int(1.5 * nx / l_x), int(1.1 * ny / l_y) : int(1.9 * ny / l_y)] = ψ2
-ψ[int(1.5 * nx / l_x), int(2.0 * ny / l_y) :] = ψ3
+ψ[int(1.5 * 1 / Δx), : int(1.0 * 1 / Δy)] = ψ1
+ψ[int(1.5 * 1 / Δx), int(1.1 * 1 / Δy) : int(1.9 * ny / l_y)] = ψ2
+ψ[int(1.5 * 1 / Δx), int(2.0 * 1 / Δy) :] = ψ3
 
 # Check this below part with prof
 # How to apply inlet and outlet conditions

@@ -13,7 +13,7 @@ l_y = 4.0
 nx = int(l_x / Δx) + 1
 ny = int(l_y / Δy) + 1
 
-ψ = np.ones((nx, ny)) * 0  # Initial guess
+ψ = np.ones((nx, ny)) * 100  # Initial guess
 
 ψ1 = 100
 ψ2 = 150
@@ -23,12 +23,12 @@ ny = int(l_y / Δy) + 1
 ψ[0, :] = ψ3  # Left
 ψ[:, -1] = ψ3  # Top
 # Bottom
-ψ[: int(1.1 * nx / l_x), 0] = ψ3
-ψ[int(1.1 * nx / l_x) :, 0] = ψ1
+ψ[: int(1.1 * 1/ Δx), 0] = ψ3
+ψ[int(1.1 * 1/ Δx) :, 0] = ψ1
 # Right
-ψ[-1, : int(1.0 * ny / l_y)] = ψ1
-ψ[-1, int(1.1 * ny / l_y) : int(1.9 * ny / l_y)] = ψ2
-ψ[-1, int(2.0 * ny / l_y) :] = ψ3
+ψ[-1, : int(1.0 * 1 / Δy)] = ψ1
+ψ[-1, int(1.1 * 1 / Δy) : int(1.9 * ny / l_y)] = ψ2
+ψ[-1, int(2.0 * 1 / Δy) :] = ψ3
 
 # Point Jacobi method
 iterations = 10000
@@ -42,16 +42,16 @@ for k in range(iterations):
         β**2 * (ψ[1:-1, 2:] + ψ[1:-1, 0:-2]) + (ψ[2:, 1:-1] + ψ[0:-2, 1:-1])
     )
 
-    # Apply boundary conditions again (only needed outside update loop)
+    # Boundary conditions
     ψ[0, :] = ψ3  # Left
     ψ[:, -1] = ψ3  # Top
     # Bottom
-    ψ[: int(1.1 * nx / l_x), 0] = ψ3
-    ψ[int(1.1 * nx / l_x) :, 0] = ψ1
+    ψ[: int(1.1 * 1/ Δx), 0] = ψ3
+    ψ[int(1.1 * 1/ Δx) :, 0] = ψ1
     # Right
-    ψ[-1, : int(1.0 * ny / l_y)] = ψ1
-    ψ[-1, int(1.1 * ny / l_y) : int(1.9 * ny / l_y)] = ψ2
-    ψ[-1, int(2.0 * ny / l_y) :] = ψ3
+    ψ[-1, : int(1.0 * 1 / Δy)] = ψ1
+    ψ[-1, int(1.1 * 1 / Δy) : int(1.9 * ny / l_y)] = ψ2
+    ψ[-1, int(2.0 * 1 / Δy) :] = ψ3
 
     # Convergence check
     error = np.linalg.norm(ψ - ψ_old) / np.linalg.norm(ψ)
