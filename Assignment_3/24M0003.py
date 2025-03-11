@@ -50,7 +50,7 @@ for k in range(iterations):
     ψ[int(1.1 * 1 / Δx) :, 0] = ψ1
     # Right
     ψ[-1, : int(1.1 * 1 / Δy)] = ψ1
-    ψ[-1, int(1.1 * 1 / Δy) : int(2.0 * ny / l_y)] = ψ2
+    ψ[-1, int(1.1 * 1 / Δy) : int(2.0 * 1 / Δy)] = ψ2
     ψ[-1, int(2.0 * 1 / Δy) :] = ψ3
 
     # Convergence check
@@ -106,7 +106,7 @@ plt.savefig("streamline_symmetric.png")
 # plt.show()
 plt.close()
 
-print(ψ[: int(1.1 * 1 / Δx), 0])
+# print(ψ[: int(1.1 * 1 / Δx), 0])
 # Saving ψ.T to a text File
 # Stack X, Y, and ψ.T into a single array for saving
 # data = np.column_stack((X.ravel(), Y.ravel(), ψ.T.ravel()))

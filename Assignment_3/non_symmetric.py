@@ -29,7 +29,7 @@ ny = int(l_y / Δy) + 1
 ψ[int(2.0 * 1 / Δx) :, 0] = ψ3
 # Middle
 ψ[int(1.5 * 1 / Δx), : int(1.1 * 1 / Δy)] = ψ1
-ψ[int(1.5 * 1 / Δx), int(1.1 * 1 / Δy) : int(2.0 * 1/ Δy)] = ψ2
+ψ[int(1.5 * 1 / Δx), int(1.1 * 1 / Δy) : int(2.0 * 1 / Δy)] = ψ2
 ψ[int(1.5 * 1 / Δx), int(2.0 * 1 / Δy) :] = ψ3
 
 # Point Jacobi method
@@ -53,7 +53,7 @@ for k in range(iterations):
     ψ[int(2.0 * 1 / Δx) :, 0] = ψ3
     # Middle
     ψ[int(1.5 * 1 / Δx), : int(1.1 * 1 / Δy)] = ψ1
-    ψ[int(1.5 * 1 / Δx), int(1.1 * 1 / Δy) : int(2.0 * 1/ Δy)] = ψ2
+    ψ[int(1.5 * 1 / Δx), int(1.1 * 1 / Δy) : int(2.0 * 1 / Δy)] = ψ2
     ψ[int(1.5 * 1 / Δx), int(2.0 * 1 / Δy) :] = ψ3
 
     # Convergence check
