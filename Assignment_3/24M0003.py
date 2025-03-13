@@ -1,48 +1,15 @@
-# Compute Streamline pattern using point jacobi method
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Grid size
-l_x = 1.5
-l_y = 4.0
 
-Δx = 0.1
-Δy = 0.1
-β = Δx / Δy
+def initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3):
+    """Initialize the grid and apply boundary conditions."""
+    β = Δx / Δy
+    nx = int(l_x / Δx) + 1
+    ny = int(l_y / Δy) + 1
+    ψ = np.ones((nx, ny)) * 200
 
-nx = int(l_x / Δx) + 1
-ny = int(l_y / Δy) + 1
-
-ψ = np.ones((nx, ny)) * 100  # Initial guess
-
-ψ1 = 100
-ψ2 = 150
-ψ3 = 300
-
-# Boundary conditions
-ψ[0, :] = ψ3  # Left
-ψ[:, -1] = ψ3  # Top
-# Bottom
-ψ[: int(1.1 * 1 / Δx), 0] = ψ3
-ψ[int(1.1 * 1 / Δx) :, 0] = ψ1
-# Right
-ψ[-1, : int(1.1 * 1 / Δy)] = ψ1
-ψ[-1, int(1.1 * 1 / Δy) : int(2.0 * ny / l_y)] = ψ2
-ψ[-1, int(2.0 * 1 / Δy) :] = ψ3
-
-# Point Jacobi method
-iterations = 10000
-tolerance = 1e-4
-error_val = []
-for k in range(iterations):
-    ψ_old = ψ.copy()  # Store previous iteration
-
-    # Update internal points using vectorized operations
-    ψ[1:-1, 1:-1] = (1 / (2 * (1 + β**2))) * (
-        β**2 * (ψ[1:-1, 2:] + ψ[1:-1, 0:-2]) + (ψ[2:, 1:-1] + ψ[0:-2, 1:-1])
-    )
-
-    # Boundary conditions
+    # Apply boundary conditions
     ψ[0, :] = ψ3  # Left
     ψ[:, -1] = ψ3  # Top
     # Bottom
@@ -53,65 +20,94 @@ for k in range(iterations):
     ψ[-1, int(1.1 * 1 / Δy) : int(2.0 * 1 / Δy)] = ψ2
     ψ[-1, int(2.0 * 1 / Δy) :] = ψ3
 
-    # Convergence check
-    error = np.linalg.norm(ψ - ψ_old) / np.linalg.norm(ψ)
-    error_val.append(error)
-    if error < tolerance:
-        print(f"Converged in {k} iterations.")
-        break
-
-if error >= tolerance:
-    print("Convergence not reached")
-
-# plot a logarithmic(base 10) error plot
-plt.plot(np.log10(error_val))
-plt.xlabel("Iterations")
-plt.ylabel("Log10(Error)")
-plt.title("Convergence Plot")
-plt.show()
-
-# Mirroring ψ about the right edge
-ψ = np.vstack((ψ, ψ[-2::-1, :]))
-
-# Compute velocity components from the streamfunction
-u = np.gradient(ψ, axis=1) / Δy  # u = ∂ψ/∂y
-v = -np.gradient(ψ, axis=0) / Δx  # v = -∂ψ/∂ξ
-
-# Make grid for plotting streamlines
-x = np.linspace(0, 2 * l_x, 2 * nx - 1)
-y = np.linspace(0, l_y, ny)
-X, Y = np.meshgrid(x, y)
+    return ψ, β, nx, ny
 
 
-# Plot streamfunction Contours
-plt.figure(figsize=(10, 8))
-plt.contourf(ψ.T, cmap="viridis")
-plt.colorbar(label="Streamfunction")
-plt.title("Streamfunction Contours")
-plt.xlabel("x")
-plt.ylabel("y")
-plt.savefig("streamfunction_symmetric.png")
-# plt.show()
-plt.close()
+def point_jacobi(ψ, β, nx, ny, iterations=10000, tolerance=1e-4):
+    """Perform Point Jacobi iterations to solve for the streamfunction."""
+    error_val = []
+    for k in range(iterations):
+        ψ_old = ψ.copy()
 
-# Plot streamlines
-plt.figure(figsize=(10, 8))
-plt.streamplot(X, Y, u.T, v.T, color="b", density=2, linewidth=1, arrowsize=0.5)
-plt.contourf(X, Y, ψ.T, cmap="viridis", alpha=0.5)  # Overlay streamfunction contours
-plt.colorbar(label="Streamfunction")
-plt.title("Streamline Patterns")
-plt.xlabel("x")
-plt.ylabel("y")
-plt.savefig("streamline_symmetric.png")
-# plt.show()
-plt.close()
+        # Update internal points
+        ψ[1:-1, 1:-1] = (1 / (2 * (1 + β**2))) * (
+            β**2 * (ψ[1:-1, 2:] + ψ[1:-1, 0:-2]) + (ψ[2:, 1:-1] + ψ[0:-2, 1:-1])
+        )
 
-# print(ψ[: int(1.1 * 1 / Δx), 0])
-# Saving ψ.T to a text File
-# Stack X, Y, and ψ.T into a single array for saving
-# data = np.column_stack((X.ravel(), Y.ravel(), ψ.T.ravel()))
+        # Convergence check
+        error = np.linalg.norm(ψ - ψ_old) / np.linalg.norm(ψ)
+        error_val.append(error)
+        if error < tolerance:
+            print(f"Converged in {k} iterations.")
+            break
 
-# Save to a text file
-# np.savetxt(
-#    "psi_transposed_with_xy.txt", data, fmt="%.6f", header="x y psi", comments=""
-# )
+    if error >= tolerance:
+        print("Convergence not reached")
+
+    return ψ, error_val
+
+
+def plot_convergence(error_val):
+    """Plot and save the convergence plot."""
+    plt.plot(np.log10(error_val))
+    plt.xlabel("Iterations")
+    plt.ylabel("Log10(Error)")
+    plt.title("Convergence Plot")
+    plt.savefig("convergence_symmetric.png")
+    # plt.show()
+    plt.close()
+
+
+def compute_velocity(ψ, Δx, Δy):
+    """Compute velocity components from the streamfunction."""
+    u = np.gradient(ψ, axis=1) / Δy  # u = ∂ψ/∂y
+    v = -np.gradient(ψ, axis=0) / Δx  # v = -∂ψ/∂ξ
+    return u, v
+
+
+def plot_streamfunction(ψ):
+    """Plot and save the streamfunction contours."""
+    plt.figure(figsize=(10, 8))
+    plt.contourf(ψ.T, cmap="viridis")
+    plt.colorbar(label="Streamfunction")
+    plt.title("Streamfunction Contours")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.savefig("streamfunction_symmetric.png")
+    # plt.show()
+    plt.close()
+
+
+def plot_streamlines(X, Y, u, v, ψ):
+    """Plot and save the streamline patterns."""
+    plt.figure(figsize=(10, 8))
+    plt.streamplot(X, Y, u.T, v.T, color="b", density=2, linewidth=1, arrowsize=0.5)
+    plt.contourf(X, Y, ψ.T, cmap="viridis", alpha=0.5)
+    plt.colorbar(label="Streamfunction")
+    plt.title("Streamline Patterns")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.savefig("streamlines_symmetric.png")
+    # plt.show()
+    plt.close()
+
+
+if __name__ == "__main__":
+    l_x, l_y = 1.5, 4.0
+    Δx, Δy = 0.1, 0.1
+    ψ1, ψ2, ψ3 = 100, 150, 300
+
+    ψ, β, nx, ny = initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3)
+    ψ, error_val = point_jacobi(ψ, β, nx, ny)
+    plot_convergence(error_val)
+
+    # Mirroring ψ about the right edge
+    ψ = np.vstack((ψ, ψ[-2::-1, :]))
+
+    u, v = compute_velocity(ψ, Δx, Δy)
+    x = np.linspace(0, 2 * l_x, 2 * nx - 1)
+    y = np.linspace(0, l_y, ny)
+    X, Y = np.meshgrid(x, y)
+
+    plot_streamfunction(ψ)
+    plot_streamlines(X, Y, u, v, ψ)
