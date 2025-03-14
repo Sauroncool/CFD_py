@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3):
+def initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3, init_guess=200):
     """Initialize the grid and apply boundary conditions."""
     β = Δx / Δy
     nx = int(l_x / Δx) + 1
@@ -97,9 +97,31 @@ def plot_streamlines(X, Y, u, v, ψ):
 if __name__ == "__main__":
     l_x, l_y = 1.5, 4.0
     Δx, Δy = 0.1, 0.1
-    ψ1, ψ2, ψ3 = 100, 150, 300
 
-    ψ, β, nx, ny = initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3)
+    # Test cases
+    def test_case_1():
+        return 100, 150, 300
+
+    def test_case_2():
+        return 100, 200, 300
+
+    def test_case_3():
+        return 100, 250, 300
+
+    # Initial guess
+    def init_guess_1():
+        return 10000
+
+    def init_guess_2():
+        return 150
+
+    def init_guess_3():
+        return 200
+
+    ψ1, ψ2, ψ3 = test_case_1()
+    init_guess = init_guess_1()
+
+    ψ, β, nx, ny = initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3, init_guess)
     ψ, error_val, flag = point_jacobi(ψ, β, nx, ny)
     plot_convergence(error_val)
 
