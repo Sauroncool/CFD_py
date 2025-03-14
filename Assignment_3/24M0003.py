@@ -7,7 +7,7 @@ def initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3, init_guess=200):
     β = Δx / Δy
     nx = int(l_x / Δx) + 1
     ny = int(l_y / Δy) + 1
-    ψ = np.ones((nx, ny)) * 200
+    ψ = np.ones((nx, ny)) * init_guess
 
     # Apply boundary conditions
     ψ[0, :] = ψ3  # Left
@@ -46,15 +46,15 @@ def point_jacobi(ψ, β, nx, ny, iterations=10000, tolerance=1e-4):
         print("Convergence not reached")
         flag = False
 
-    return ψ, error_val, flag
+    return ψ, error_val, k, flag
 
 
-def plot_convergence(error_val):
+def plot_convergence(error_val, k):
     """Plot and save the convergence plot."""
     plt.plot(np.log10(error_val))
     plt.xlabel("Iterations")
     plt.ylabel("Log10(Error)")
-    plt.title("Convergence Plot")
+    plt.title(f"Convergence Plot (Converged in {k} iterations)")
     plt.savefig(f"convergence_{ψ1}_{ψ2}_{ψ3}_{init_guess}.png")
     # plt.show()
     plt.close()
@@ -122,8 +122,8 @@ if __name__ == "__main__":
     init_guess = init_guess_1()
 
     ψ, β, nx, ny = initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3, init_guess)
-    ψ, error_val, flag = point_jacobi(ψ, β, nx, ny)
-    plot_convergence(error_val)
+    ψ, error_val, k, flag = point_jacobi(ψ, β, nx, ny)
+    plot_convergence(error_val, k)
 
     if flag:
         # Mirroring ψ about the right edge
