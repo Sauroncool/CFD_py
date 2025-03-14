@@ -55,7 +55,7 @@ def plot_convergence(error_val):
     plt.xlabel("Iterations")
     plt.ylabel("Log10(Error)")
     plt.title("Convergence Plot")
-    plt.savefig("convergence_symmetric.png")
+    plt.savefig(f"convergence_{ψ1}_{ψ2}_{ψ3}_{init_guess}.png")
     # plt.show()
     plt.close()
 
@@ -75,7 +75,7 @@ def plot_streamfunction(ψ):
     plt.title("Streamfunction Contours")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.savefig("streamfunction_symmetric.png")
+    plt.savefig(f"streamfunction_{ψ1}_{ψ2}_{ψ3}_{init_guess}.png")
     # plt.show()
     plt.close()
 
@@ -89,7 +89,7 @@ def plot_streamlines(X, Y, u, v, ψ):
     plt.title("Streamline Patterns")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.savefig("streamlines_symmetric.png")
+    plt.savefig(f"Streamline_{ψ1}_{ψ2}_{ψ3}_{init_guess}.png")
     # plt.show()
     plt.close()
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     # Initial guess
     def init_guess_1():
-        return 10000
+        return 100
 
     def init_guess_2():
         return 150
@@ -136,3 +136,22 @@ if __name__ == "__main__":
 
         plot_streamfunction(ψ)
         plot_streamlines(X, Y, u, v, ψ)
+
+        # Write value of streamfunction at x = 0,1,2,3 for all y into a csv File
+        import csv
+
+        with open(f"{ψ1}_{ψ2}_{ψ3}_{init_guess}.csv", mode="w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["y", "ψ(x=0)", "ψ(x=1)", "ψ(x=2)", "ψ(x=3)"])
+            for i in range(ny):
+                writer.writerow(
+                    [
+                        y[i],
+                        round(ψ[0, i], 4),
+                        round(ψ[int(1.0 * 1 / Δx), i], 4),
+                        round(ψ[int(2.0 * 1 / Δx), i], 4),
+                        round(ψ[-1, i], 4),
+                    ]
+                )
+    else:
+        print("Convergence not reached")
