@@ -39,12 +39,14 @@ def point_jacobi(ψ, β, nx, ny, iterations=10000, tolerance=1e-4):
         error_val.append(error)
         if error < tolerance:
             print(f"Converged in {k} iterations.")
+            flag = True
             break
 
     if error >= tolerance:
         print("Convergence not reached")
+        flag = False
 
-    return ψ, error_val
+    return ψ, error_val, flag
 
 
 def plot_convergence(error_val):
@@ -98,16 +100,17 @@ if __name__ == "__main__":
     ψ1, ψ2, ψ3 = 100, 150, 300
 
     ψ, β, nx, ny = initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3)
-    ψ, error_val = point_jacobi(ψ, β, nx, ny)
+    ψ, error_val, flag = point_jacobi(ψ, β, nx, ny)
     plot_convergence(error_val)
 
-    # Mirroring ψ about the right edge
-    ψ = np.vstack((ψ, ψ[-2::-1, :]))
+    if flag:
+        # Mirroring ψ about the right edge
+        ψ = np.vstack((ψ, ψ[-2::-1, :]))
 
-    u, v = compute_velocity(ψ, Δx, Δy)
-    x = np.linspace(0, 2 * l_x, 2 * nx - 1)
-    y = np.linspace(0, l_y, ny)
-    X, Y = np.meshgrid(x, y)
+        u, v = compute_velocity(ψ, Δx, Δy)
+        x = np.linspace(0, 2 * l_x, 2 * nx - 1)
+        y = np.linspace(0, l_y, ny)
+        X, Y = np.meshgrid(x, y)
 
-    plot_streamfunction(ψ)
-    plot_streamlines(X, Y, u, v, ψ)
+        plot_streamfunction(ψ)
+        plot_streamlines(X, Y, u, v, ψ)
