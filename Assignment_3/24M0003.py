@@ -56,6 +56,8 @@ def plot_convergence(error_val, k, filename):
     ax.plot(np.log10(error_val))
     ax.set_xlabel("Iterations")
     ax.set_ylabel("Log10(Error)")
+    if max(error_val) > 1e-4:
+        ax.set_title(f"Convergence Plot (Not Converged after {k} iterations)")
     ax.set_title(f"Convergence Plot (Converged in {k} iterations)")
     save_plot(fig, filename)
 
