@@ -25,7 +25,7 @@ def initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3, init_guess=200):
     return ψ, β, nx, ny
 
 
-def point_jacobi(ψ, β, nx, ny, iterations=10000, tolerance=1e-4):
+def point_jacobi(ψ, β, nx, ny, tolerance, iterations=10000):
     """Perform Point Jacobi iterations to solve for the streamfunction."""
     error_val = []
     for k in range(iterations):
@@ -50,13 +50,13 @@ def save_plot(fig, filename):
     plt.close(fig)
 
 
-def plot_convergence(error_val, k, filename):
+def plot_convergence(error_val, k, tolerance, filename):
     """Plot and save the convergence plot."""
     fig, ax = plt.subplots()
     ax.plot(np.log10(error_val))
     ax.set_xlabel("Iterations")
     ax.set_ylabel("Log10(Error)")
-    if max(error_val) > 1e-4:
+    if max(error_val) > tolerance:
         ax.set_title(f"Convergence Plot (Not Converged after {k} iterations)")
     ax.set_title(f"Convergence Plot (Converged in {k} iterations)")
     save_plot(fig, filename)
@@ -115,14 +115,18 @@ if __name__ == "__main__":
     test_cases = [(100, 150, 300), (100, 200, 300), (100, 250, 300)]
     init_guesses = [100, 150, 200]
 
+    tolerance = 1e-4
+
     for i, (ψ1, ψ2, ψ3) in enumerate(test_cases, 1):
         for j, init_guess in enumerate(init_guesses, 1):
             ψ, β, nx, ny = initialize_grid(l_x, l_y, Δx, Δy, ψ1, ψ2, ψ3, init_guess)
             print(f"Test case {i}, Initial guess {j}")
-            ψ, error_val, k, flag = point_jacobi(ψ, β, nx, ny)
+            ψ, error_val, k, flag = point_jacobi(ψ, β, nx, ny, tolerance)
 
             filename_prefix = f"test_case_{i}_init_{j}"
-            plot_convergence(error_val, k, f"{filename_prefix}_convergence.png")
+            plot_convergence(
+                error_val, k, tolerance, f"{filename_prefix}_convergence.png"
+            )
 
             if flag:
                 ψ = np.vstack((ψ, ψ[-2::-1, :]))  # Mirroring ψ about the right edge
