@@ -71,10 +71,10 @@ def compute_velocity(ψ, Δx, Δy):
     return u, v
 
 
-def plot_streamfunction(ψ, filename):
+def plot_streamfunction(X, Y, ψ, filename):
     """Plot and save the streamfunction contours."""
     fig, ax = plt.subplots(figsize=(10, 8))
-    c = ax.contourf(ψ.T, cmap="viridis")
+    c = ax.contourf(X, Y, ψ.T, cmap="viridis")
     plt.colorbar(c, label="Streamfunction")
     ax.set_title("Streamfunction Contours")
     ax.set_xlabel("x")
@@ -139,6 +139,6 @@ if __name__ == "__main__":
                 y = np.linspace(0, l_y, ny)
                 X, Y = np.meshgrid(x, y)
 
-                plot_streamfunction(ψ, f"{filename_prefix}_streamfunction.png")
+                plot_streamfunction(X, Y, ψ, f"{filename_prefix}_streamfunction.png")
                 plot_streamlines(X, Y, u, v, ψ, f"{filename_prefix}_streamlines.png")
                 save_csv(y, ψ, nx, ny, Δx, f"{filename_prefix}.csv")
