@@ -46,7 +46,7 @@ def point_jacobi(ψ, β, nx, ny, tolerance, iterations=10000):
 
 def save_plot(fig, filename):
     """Save a plot to the results directory."""
-    os.makedirs("Results", exist_ok=True)  # Ensure the directory exists
+    os.makedirs("Results", exist_ok=True)  # Ensure the Results directory exists
     fig.savefig(os.path.join("Results", filename))
     plt.close(fig)
 
@@ -95,7 +95,7 @@ def plot_streamlines(X, Y, u, v, ψ, filename):
 
 def save_csv(y, ψ, nx, ny, Δx, filename):
     """Save the streamfunction data to a CSV file."""
-    with open(os.path.join("Results", filename), mode="w", newline="", encoding="utf-8") as file:
+    with open(os.path.join("Results", filename), mode="w", newline="", encoding="utf-8-sig") as file:
         writer = csv.writer(file)
         writer.writerow(["y", "ψ(x=0)", "ψ(x=1)", "ψ(x=2)", "ψ(x=3)"])
         for i in range(ny):
