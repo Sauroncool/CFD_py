@@ -46,14 +46,15 @@ def point_jacobi(ψ, β, nx, ny, tolerance, iterations=10000):
 
 def save_plot(fig, filename):
     """Save a plot to the results directory."""
+    fig.tight_layout()
     os.makedirs("Results", exist_ok=True)  # Ensure the Results directory exists
-    fig.savefig(os.path.join("Results", filename))
+    fig.savefig(os.path.join("Results", filename), dpi=300)
     plt.close(fig)
 
 
 def plot_convergence(error_val, k, tolerance, filename):
     """Plot and save the convergence plot."""
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 8))
     ax.plot(np.log10(error_val))
     ax.set_xlabel("Iterations")
     ax.set_ylabel("Log10(Error)")
@@ -95,7 +96,9 @@ def plot_streamlines(X, Y, u, v, ψ, filename):
 
 def save_csv(y, ψ, nx, ny, Δx, filename):
     """Save the streamfunction data to a CSV file."""
-    with open(os.path.join("Results", filename), mode="w", newline="", encoding="utf-8-sig") as file:
+    with open(
+        os.path.join("Results", filename), mode="w", newline="", encoding="utf-8-sig"
+    ) as file:
         writer = csv.writer(file)
         writer.writerow(["y", "ψ(x=0)", "ψ(x=1)", "ψ(x=2)", "ψ(x=3)"])
         for i in range(ny):
