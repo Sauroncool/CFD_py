@@ -20,26 +20,18 @@ y = np.array(y)
 leading_edge_idx = np.argmin(x)
 
 # Split upper and lower surfaces
-x_upper, y_upper = x[:leading_edge_idx + 1], y[:leading_edge_idx + 1]  # Upper surface
+x_upper, y_upper = x[: leading_edge_idx + 1], y[: leading_edge_idx + 1]  # Upper surface
 x_lower, y_lower = x[leading_edge_idx:], y[leading_edge_idx:]  # Lower surface
 
-# Ensure at least two points exist for interpolation
-if len(x_upper) < 2 or len(x_lower) < 2:
-    raise ValueError("Not enough points for interpolation!")
-
-# Sort both surfaces by increasing x
-upper_sorted = np.argsort(x_upper)
-lower_sorted = np.argsort(x_lower)
-
-x_upper, y_upper = x_upper[upper_sorted], y_upper[upper_sorted]
-x_lower, y_lower = x_lower[lower_sorted], y_lower[lower_sorted]
+# Reverse upper surface to have increasing x
+x_upper, y_upper = x_upper[::-1], y_upper[::-1]
 
 # Create cubic spline interpolation
 cs_upper = CubicSpline(x_upper, y_upper)
 cs_lower = CubicSpline(x_lower, y_lower)
 
 # Generate new points for smooth interpolation
-x_new = np.linspace(0, 1, 100)
+x_new = np.linspace(0, 1, 200)
 y_upper_new = cs_upper(x_new)
 y_lower_new = cs_lower(x_new)
 
