@@ -45,6 +45,7 @@ def plot_airfoil(x, y, x_new, y_new):
     plt.legend()
     plt.show()
 
+
 if __name__ == "__main__":
     filename = "naca2412.dat"
 
