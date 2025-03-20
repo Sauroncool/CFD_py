@@ -1,24 +1,5 @@
 # Code to improve grid generated using the TFI method by using elliptic grid generation.
-import matplotlib.pyplot as plt
 import numpy as np
-from airfoil import load_airfoil_data, parametric_interpolation
-from tfi import grid_generation
-
-num_xi = 101
-num_eta = 81
-R_outer = 10.0
-# Get airfoil coordinates
-filename = "naca2412.dat"
-
-# Load data
-x_afl_pts, y_afl_pts = load_airfoil_data(filename)
-
-# Perform parametric cubic spline interpolation
-x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts, y_afl_pts)
-
-# Generate the grid
-x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
-
 
 def coeff(x, y, ξ, η):
     dx_dξ = np.gradient(x, ξ, axis=0)
@@ -32,11 +13,6 @@ def coeff(x, y, ξ, η):
     c = dx_dη**2 + dy_dη**2
 
     return a, b, c
-
-
-Δξ = ξ[1] - ξ[0]
-Δη = η[1] - η[0]
-
 
 def GS_iterartion(x, y, ξ, η, Δξ, Δη, max_iter=1000):
     x_new, y_new = np.copy(x), np.copy(y)
@@ -92,21 +68,36 @@ def GS_iterartion(x, y, ξ, η, Δξ, Δη, max_iter=1000):
     #                     + c[-1, 1:-1] * (y[-1, 2:] + y[-1, :-2]) / Δη**2
     #                     - b[-1, 1:-1] * (y[1, 2:] - y[1, :-2] + y[-2, :-2] - y[-2, 2:]) / (2 * Δξ * Δη)
     #                     ) / (2 * (a[-1, 1:-1] / Δξ**2 + c[-1, 1:-1] / Δη**2))
-    
+
         x, y = np.copy(x_new), np.copy(y_new)
     return x_new, y_new
 
 
-plt.figure()
-plt.plot(x, y, "b-", linewidth=0.5)
-plt.plot(x.T, y.T, "r-", linewidth=0.5)
-plt.axis("equal")
-plt.show()
+if __name__ == "__main__":
+    from airfoil import load_airfoil_data, parametric_interpolation
+    from tfi import grid_generation, plot_grid
 
-x, y = GS_iterartion(x, y, ξ, η, Δξ, Δη)
 
-plt.figure()
-plt.plot(x, y, "b-", linewidth=0.5)
-plt.plot(x.T, y.T, "r-", linewidth=0.5)
-plt.axis("equal")
-plt.show()
+    num_xi = 101
+    num_eta = 81
+    R_outer = 10.0
+    # Get airfoil coordinates
+    filename = "naca2412.dat"
+
+    # Load data
+    x_afl_pts, y_afl_pts = load_airfoil_data(filename)
+
+    # Perform parametric cubic spline interpolation
+    x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts, y_afl_pts)
+
+    # Generate the grid
+    x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
+
+    plot_grid(x, y)
+
+    Δξ = ξ[1] - ξ[0]
+    Δη = η[1] - η[0]
+
+    x, y = GS_iterartion(x, y, ξ, η, Δξ, Δη)
+
+    plot_grid(x, y)

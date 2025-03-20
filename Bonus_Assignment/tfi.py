@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from airfoil import load_airfoil_data, parametric_interpolation
 
 
 def grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer):
@@ -42,6 +41,9 @@ def plot_grid(x, y):
 
 
 if __name__ == "__main__":
+
+    from airfoil import load_airfoil_data, parametric_interpolation
+
     # Define the grid size
     num_xi = 101
     num_eta = 81
@@ -57,15 +59,6 @@ if __name__ == "__main__":
 
     # Generate the grid
     x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
-
-    dx_dξ = np.gradient(x, ξ, axis=0)
-    dy_dξ = np.gradient(y, ξ, axis=0)
-
-    dx_dη = np.gradient(x, η, axis=1)
-    dy_dη = np.gradient(y, η, axis=1)
-
-    print(dx_dξ.shape)
-    print(y.shape)
 
     # Plot the grid
     plot_grid(x, y)
