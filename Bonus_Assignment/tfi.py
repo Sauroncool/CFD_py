@@ -27,8 +27,7 @@ def grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer):
             y[i, j] = (1 - eta[j]) * y_inner[i] + eta[j] * R_outer * np.sin(
                 2 * np.pi * xi[i]
             )
-
-    return x, y
+    return x, y, xi, eta
 
 
 def plot_grid(x, y):
@@ -51,13 +50,22 @@ if __name__ == "__main__":
     filename = "naca2412.dat"
 
     # Load data
-    x, y = load_airfoil_data(filename)
+    x_afl_pts, y_afl_pts = load_airfoil_data(filename)
 
     # Perform parametric cubic spline interpolation
-    x_airfoil, y_airfoil = parametric_interpolation(x, y)
+    x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts, y_afl_pts)
 
     # Generate the grid
-    x, y = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
+    x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
+
+    dx_dξ = np.gradient(x, ξ, axis=0)
+    dy_dξ = np.gradient(y, ξ, axis=0)
+
+    dx_dη = np.gradient(x, η, axis=1)
+    dy_dη = np.gradient(y, η, axis=1)
+
+    print(dx_dξ.shape)
+    print(y.shape)
 
     # Plot the grid
     plot_grid(x, y)
