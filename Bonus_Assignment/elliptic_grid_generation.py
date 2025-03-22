@@ -20,7 +20,7 @@ def GS_iterartion(x, y, ξ, η, max_iter=1000, tolerance=1e-6):
     a, b, c = coeff(x, y, ξ, η)
     Δξ = ξ[1] - ξ[0]
     Δη = η[1] - η[0]
-    for i in range(max_iter):
+    for iter in range(max_iter):
         for i in range(1, len(ξ) - 1):
             for j in range(1, len(η) - 1):
                 x_new[i, j] = (
@@ -89,10 +89,10 @@ def GS_iterartion(x, y, ξ, η, max_iter=1000, tolerance=1e-6):
         error = x_error + y_error
 
         if error < tolerance:
-            print(f"Converged in {i + 1} iterations")
+            print(f"Converged in {iter + 1} iterations")
             break
 
-        x, y = np.copy(x_new), np.copy(y_new)
+        x, y = x_new, y_new
 
     return x_new, y_new
 

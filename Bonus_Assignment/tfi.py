@@ -56,10 +56,13 @@ if __name__ == "__main__":
 
     # Perform parametric cubic spline interpolation
     x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts, y_afl_pts)
-    x_airfoil = x_airfoil-0.5
+
 
     # Generate the grid
     x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
+    # print(x[0,:]-x[-1,:])
+    # print(y[0,:]-y[-1,:])
+
 
     # Plot the grid
     plot_grid(x, y, "grid_tfi.png")

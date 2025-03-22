@@ -12,7 +12,7 @@ filename = "naca2412.dat"
 x_afl_pts, y_afl_pts = load_airfoil_data(filename)
 
 # Perform parametric cubic spline interpolation
-x_afl_pts = x_afl_pts-0.5
+#x_afl_pts = x_afl_pts-0.5
 x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts, y_afl_pts)
 plot_airfoil(x_afl_pts, y_afl_pts, x_airfoil, y_airfoil)
 
@@ -20,6 +20,6 @@ plot_airfoil(x_afl_pts, y_afl_pts, x_airfoil, y_airfoil)
 x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
 plot_grid(x, y, "grid_tfi.png")
 
-x, y = GS_iterartion(x, y, ξ, η, max_iter=500)
+x, y = GS_iterartion(x, y, ξ, η, max_iter=100)
 plot_grid(x, y, "grid_elliptic.png")
 
