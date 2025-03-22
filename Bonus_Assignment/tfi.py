@@ -29,7 +29,7 @@ def grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer):
     return x, y, xi, eta
 
 
-def plot_grid(x, y):
+def plot_grid(x, y, name):
     plt.figure()
     plt.plot(x, y, "b-", linewidth=0.5)
     plt.plot(x.T, y.T, "r-", linewidth=0.5)
@@ -37,11 +37,11 @@ def plot_grid(x, y):
     plt.xlabel("x")
     plt.ylabel("y")
     plt.grid(linestyle="--", alpha=0.5)
+    plt.savefig(name)
     plt.show()
 
 
 if __name__ == "__main__":
-
     from airfoil import load_airfoil_data, parametric_interpolation
 
     # Define the grid size
@@ -56,9 +56,10 @@ if __name__ == "__main__":
 
     # Perform parametric cubic spline interpolation
     x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts, y_afl_pts)
+    x_airfoil = x_airfoil-0.5
 
     # Generate the grid
     x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
 
     # Plot the grid
-    plot_grid(x, y)
+    plot_grid(x, y, "grid_tfi.png")

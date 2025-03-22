@@ -43,6 +43,7 @@ def plot_airfoil(x, y, x_new, y_new):
     plt.grid(True)
     plt.gca().set_aspect("equal", adjustable="box")
     plt.legend()
+    plt.savefig("interpolated_airfoil.png")
     plt.show()
 
 
