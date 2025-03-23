@@ -15,7 +15,7 @@ def coeff(x, y, ξ, η):
     return a, b, c
 
 
-def GS_iterartion(x, y, ξ, η, max_iter=1000, tolerance=1e-6):
+def GS_iterartion(x, y, ξ, η, max_iter=1000, tolerance=1e-10):
     x_new, y_new = np.copy(x), np.copy(y)
     a, b, c = coeff(x, y, ξ, η)
     Δξ = ξ[1] - ξ[0]

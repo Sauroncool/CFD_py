@@ -16,23 +16,17 @@ def load_airfoil_data(filename):
 
 
 def parametric_interpolation(x, y, num_points=200):
-    """Interpolates the airfoil as a single continuous curve using parametric cubic splines."""
-    # Ensure the trailing edge is smoothly tapered
-    if x[0] != x[-1] or y[0] != y[-1]:
-        # Average the y-coordinates of the first and last points to ensure a smooth trailing edge
-        y_te = (y[0] + y[-1]) / 2
-        x = np.append(x, x[0])  # Close the loop by appending the first point
-        y = np.append(y, y_te)  # Use the averaged y-coordinate for the trailing edge
 
-    # Ensure the first and last y values are identical for periodic boundary conditions
-    y[-1] = y[0]  # Force the last y value to match the first
+    # Append the last point also to the front to close the trailing edge
+    x = np.append(x[-1], x)
+    y = np.append(y[-1], y) 
 
-    # Create a parameter t based on the index
+    # Create a parameter t based on cumulative distance
     t = np.linspace(0, 1, len(x))
 
-    # Create cubic splines for both x(t) and y(t) with periodic boundary conditions
-    cs_x = CubicSpline(t, x, bc_type="periodic")
-    cs_y = CubicSpline(t, y, bc_type="periodic")
+    # Create cubic splines for both x(t) and y(t)
+    cs_x = CubicSpline(t, x, bc_type="clamped")  # Clamped boundary for smooth merging
+    cs_y = CubicSpline(t, y, bc_type="clamped")
 
     # Generate smooth parametric values
     t_new = np.linspace(0, 1, num_points)

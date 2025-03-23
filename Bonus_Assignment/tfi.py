@@ -38,7 +38,21 @@ def plot_grid(x, y, name):
     plt.ylabel("y")
     plt.grid(linestyle="--", alpha=0.5)
     plt.savefig(name)
-    plt.show()
+    #plt.show()
+    plt.close()
+    # Zoomed View
+    plt.figure()
+    plt.plot(x, y, "b-", linewidth=0.5)
+    plt.plot(x.T, y.T, "r-", linewidth=0.5)
+    plt.axis("equal")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.grid(linestyle="--", alpha=0.5)
+    plt.xlim(0, 1)
+    plt.ylim(-0.5, 0.5)
+    plt.savefig("zoomed_"+name)
+    #plt.show()
+    plt.close()
 
 
 if __name__ == "__main__":
