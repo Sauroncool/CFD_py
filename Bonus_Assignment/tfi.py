@@ -38,7 +38,7 @@ def plot_grid(x, y, name):
     plt.ylabel("y")
     plt.grid(linestyle="--", alpha=0.5)
     plt.savefig(name)
-    #plt.show()
+    plt.show()
     plt.close()
     # Zoomed View
     plt.figure()

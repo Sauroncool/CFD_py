@@ -73,11 +73,11 @@ def GS_iteration(x, y, ξ, η, max_iter=1000, tolerance=5e-4):
             print(f"Iteration {iter + 1}, Error: {error}")
 
         if error < tolerance:
-            print(f"Converged in {iter + 1} iterations")
+            print(f"Converged in {iter + 1} iterations, Error: {error}")
             break
 
         if iter == max_iter - 1:
-            print("Did not converge")
+            print("Did not converge, Error: ", error)
 
         x[:], y[:] = x_new, y_new
 
