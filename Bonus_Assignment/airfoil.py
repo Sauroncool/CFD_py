@@ -15,7 +15,7 @@ def load_airfoil_data(filename):
     return np.array(x), np.array(y)
 
 
-def parametric_interpolation(x, y, num_points=200):
+def parametric_interpolation(x, y, num_points=500):
 
     # Append the last point also to the front to close the trailing edge
     x = np.append(x[-1], x)
