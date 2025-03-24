@@ -15,84 +15,71 @@ def coeff(x, y, ξ, η):
     return a, b, c
 
 
-def GS_iterartion(x, y, ξ, η, max_iter=1000, tolerance=1e-10):
+def GS_iteration(x, y, ξ, η, max_iter=1000, tolerance=5e-4):
     x_new, y_new = np.copy(x), np.copy(y)
-    a, b, c = coeff(x, y, ξ, η)
-    Δξ = ξ[1] - ξ[0]
-    Δη = η[1] - η[0]
+    Δξ = 1 / (len(ξ) - 1)
+    Δη = 1 / (len(η) - 1)
     for iter in range(max_iter):
-        for i in range(1, len(ξ) - 1):
-            for j in range(1, len(η) - 1):
-                x_new[i, j] = (
-                    a[i, j] * (x[i + 1, j] + x[i - 1, j]) / Δξ**2
-                    + c[i, j] * (x[i, j + 1] + x[i, j - 1]) / Δη**2
-                    - b[i, j]
-                    * (
-                        x[i + 1, j + 1]
-                        - x[i + 1, j - 1]
-                        + x[i - 1, j - 1]
-                        - x[i - 1, j + 1]
-                    )
-                    / (2 * Δξ * Δη)
-                ) / (2 * (a[i, j] / Δξ**2 + c[i, j] / Δη**2))
+        a, b, c = coeff(x, y, ξ, η)
+        # Interior points update
+        x_new[1:-1, 1:-1] = (
+            a[1:-1, 1:-1] * (x[2:, 1:-1] + x[:-2, 1:-1]) / Δξ**2
+            + c[1:-1, 1:-1] * (x[1:-1, 2:] + x[1:-1, :-2]) / Δη**2
+            - b[1:-1, 1:-1] * (
+                x[2:, 2:] - x[2:, :-2] + x[:-2, :-2] - x[:-2, 2:]
+            ) / (2 * Δξ * Δη)
+        ) / (2 * (a[1:-1, 1:-1] / Δξ**2 + c[1:-1, 1:-1] / Δη**2))
 
-                y_new[i, j] = (
-                    a[i, j] * (y[i + 1, j] + y[i - 1, j]) / Δξ**2
-                    + c[i, j] * (y[i, j + 1] + y[i, j - 1]) / Δη**2
-                    - b[i, j]
-                    * (
-                        y[i + 1, j + 1]
-                        - y[i + 1, j - 1]
-                        + y[i - 1, j - 1]
-                        - y[i - 1, j + 1]
-                    )
-                    / (2 * Δξ * Δη)
-                ) / (2 * (a[i, j] / Δξ**2 + c[i, j] / Δη**2))
+        y_new[1:-1, 1:-1] = (
+            a[1:-1, 1:-1] * (y[2:, 1:-1] + y[:-2, 1:-1]) / Δξ**2
+            + c[1:-1, 1:-1] * (y[1:-1, 2:] + y[1:-1, :-2]) / Δη**2
+            - b[1:-1, 1:-1] * (
+                y[2:, 2:] - y[2:, :-2] + y[:-2, :-2] - y[:-2, 2:]
+            ) / (2 * Δξ * Δη)
+        ) / (2 * (a[1:-1, 1:-1] / Δξ**2 + c[1:-1, 1:-1] / Δη**2))
 
+        # Boundary points update
+        x_new[0, 1:-1] = (
+        a[0, 1:-1] * (x[1, 1:-1] + x[-2, 1:-1]) / Δξ**2
+        + c[0, 1:-1] * (x[0, 2:] + x[0, :-2]) / Δη**2
+        - b[0, 1:-1] * (
+            x[1, 2:] - x[1, :-2] + x[-2, :-2] - x[-2, 2:]
+        ) / (2 * Δξ * Δη)
+    ) / (2 * (a[0, 1:-1] / Δξ**2 + c[0, 1:-1] / Δη**2))
 
-        for j in range(1, len(η) - 1):
-            x_new[0, j] = (
-                a[0, j] * (x[1, j] + x[-2, j]) / Δξ**2
-                + c[0, j] * (x[0, j + 1] + x[0, j - 1]) / Δη**2
-                - b[0, j]
-                * (
-                    x[1, j + 1]
-                    - x[1, j - 1]
-                    + x[-2, j - 1]
-                    - x[-2, j + 1]
-                )
-                / (2 * Δξ * Δη)
-            ) / (2 * (a[0, j] / Δξ**2 + c[0, j] / Δη**2))
-
-            y_new[0, j] = (
-                a[0, j] * (y[1, j] + y[-2, j]) / Δξ**2
-                + c[0, j] * (y[0, j + 1] + y[0, j - 1]) / Δη**2
-                - b[0, j]
-                * (
-                    y[1, j + 1]
-                    - y[1, j - 1]
-                    + y[-2, j - 1]
-                    - y[-2, j + 1]
-                )
-                / (2 * Δξ * Δη)
-            ) / (2 * (a[0, j] / Δξ**2 + c[0, j] / Δη**2))
+        y_new[0, 1:-1] = (
+            a[0, 1:-1] * (y[1, 1:-1] + y[-2, 1:-1]) / Δξ**2
+            + c[0, 1:-1] * (y[0, 2:] + y[0, :-2]) / Δη**2
+            - b[0, 1:-1] * (
+                y[1, 2:] - y[1, :-2] + y[-2, :-2] - y[-2, 2:]
+            ) / (2 * Δξ * Δη)
+        ) / (2 * (a[0, 1:-1] / Δξ**2 + c[0, 1:-1] / Δη**2))
 
 
-        x_new[-1, 1:-1] = x_new[0, 1:-1]
-        y_new[-1, 1:-1] = y_new[0, 1:-1]
+
+        x_new[-1, :] = x_new[0, :]
+        y_new[-1, :] = y_new[0, :]
 
 
 
         # Compute convergence error
-        x_error = np.sum(np.abs(x_new - x))
-        y_error = np.sum(np.abs(y_new - y))
+        x_error = np.max(np.abs(x_new - x))
+        y_error = np.max(np.abs(y_new - y))
+
+        # x_error = np.sum(np.abs(x_new - x))
+        # y_error = np.sum(np.abs(y_new - y))
         error = x_error + y_error
+        if (iter + 1) % 100 == 0:
+            print(f"Iteration {iter + 1}, Error: {error}")
 
         if error < tolerance:
             print(f"Converged in {iter + 1} iterations")
             break
 
-        x, y = x_new, y_new
+        if iter == max_iter - 1:
+            print("Did not converge")
+
+        x[:], y[:] = x_new, y_new
 
     return x_new, y_new
 
@@ -118,6 +105,6 @@ if __name__ == "__main__":
 
     plot_grid(x, y, "grid_tfi.png")
 
-    x, y = GS_iterartion(x, y, ξ, η)
+    x, y = GS_iteration(x, y, ξ, η)
 
     plot_grid(x, y, "grid_elliptic.png")

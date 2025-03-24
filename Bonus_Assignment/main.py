@@ -1,5 +1,5 @@
 from airfoil import load_airfoil_data, parametric_interpolation, plot_airfoil
-from elliptic_grid_generation import GS_iterartion
+from elliptic_grid_generation import GS_iteration
 from tfi import grid_generation, plot_grid
 
 num_xi = 101
@@ -20,6 +20,6 @@ plot_airfoil(x_afl_pts, y_afl_pts, x_airfoil, y_airfoil)
 x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil, R_outer)
 plot_grid(x, y, "grid_tfi.png")
 
-x, y = GS_iterartion(x, y, ξ, η, max_iter=100)
+x, y = GS_iteration(x, y, ξ, η, max_iter=50000, tolerance=1e-6)
 plot_grid(x, y, "grid_elliptic.png")
 
