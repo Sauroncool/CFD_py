@@ -45,22 +45,9 @@ def grid_generation(num_xi, num_eta, x_airfoil, y_airfoil):
     # Generate outer square boundary
     x_outer, y_outer = square_boundary(xi)
 
-    # plt.figure()
-    # plt.plot(x_inner, y_inner, "r-", linewidth=0.5)
-    # plt.plot(x_outer, y_outer, "b-", linewidth=0.5)
-    # plt.grid(linestyle="--", alpha=0.5)
-    # plt.axis("equal")
-    # plt.xlabel("x")
-    # plt.ylabel("y")
-    # plt.show()
-
     # Initialize the x and y grid arrays
     x = np.zeros((num_xi, num_eta))
     y = np.zeros((num_xi, num_eta))
-
-    # # print x_inner, y_inner
-    # for i in range(num_xi):
-    #     print(i, x_inner[i], y_inner[i])
 
     # Compute the x and y values for the grid
     for i in range(num_xi):
@@ -68,20 +55,33 @@ def grid_generation(num_xi, num_eta, x_airfoil, y_airfoil):
             x[i, j] = (1 - eta[j]) * x_inner[i] + eta[j] * x_outer[i]
             y[i, j] = (1 - eta[j]) * y_inner[i] + eta[j] * y_outer[i]
 
-    return x, y
+    return x, y, xi, eta
 
 
-def plot_grid(x, y):
+def plot_grid(x, y, name):
     plt.figure()
     plt.plot(x, y, "b-", linewidth=0.5)
     plt.plot(x.T, y.T, "r-", linewidth=0.5)
     plt.axis("equal")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.xlim(-10, 10)
-    plt.ylim(-10, 10)
     plt.grid(linestyle="--", alpha=0.5)
+    plt.savefig(name)
     plt.show()
+    plt.close()
+    # Zoomed View
+    plt.figure()
+    plt.plot(x, y, "b-", linewidth=0.5)
+    plt.plot(x.T, y.T, "r-", linewidth=0.5)
+    plt.axis("equal")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.grid(linestyle="--", alpha=0.5)
+    plt.xlim(0, 1)
+    plt.ylim(-0.5, 0.5)
+    plt.savefig("zoomed_"+name)
+    #plt.show()
+    plt.close()
 
 
 if __name__ == "__main__":
@@ -92,5 +92,6 @@ if __name__ == "__main__":
     x, y = load_airfoil_data(filename)
     x_airfoil, y_airfoil = parametric_interpolation(x, y)
 
-    x, y = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil)
-    plot_grid(x, y)
+    x, y, xi, eta = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil)
+    # Plot the grid
+    plot_grid(x, y, "grid_tfi.png")
