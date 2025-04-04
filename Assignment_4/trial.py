@@ -25,7 +25,7 @@ def extract(U, A):
     return ρ, u, E, P
 
 
-def FVS(U, A, γ = 1.4):
+def FVS(U, A, γ):
     ρ, u, E, P = extract(U, A)  # Extract primitive variables
     a = np.sqrt(γ * P / ρ)  # Speed of sound
     M = u / a  # Mach number
@@ -90,7 +90,7 @@ a = np.sqrt(γ * R * T)  # Speed of sound
 U = vectors(P, ρ, u, A)  # Conservative variables
 
 # Courant number and iteration parameters
-CFL = 0.95
+CFL = 0.8
 tol = 1e-3
 iter_max = 50000
 
@@ -117,7 +117,7 @@ for iter in range(iter_max):
     U = vectors(P, ρ, u, A)  # Update conservative variables
 
     # Compute fluxes
-    F_plus, F_minus = FVS(U, A)
+    F_plus, F_minus = FVS(U, A, γ)
 
     S = np.array([np.zeros(Nx), P * dA_dx, np.zeros(Nx)])
     U[:, 1:-1] = (
@@ -133,8 +133,7 @@ for iter in range(iter_max):
     M = u / a
 
     # Check convergence
-    error = np.linalg.norm(U - U_old)
-
+    error = np.max(np.abs(U - U_old))
     if iter % 100 == 0:
         print(f"Iteration {iter}, Error: {error:.6e}")
     if error < tol:
@@ -289,7 +288,6 @@ axes[2].set_title("Temperature Ratio Distribution")
 
 # Common Legend at top
 labels = ["Numerical", "Analytical", "Idealized Supersonic", "Idealized Subsonic"]
-fig.legend(labels, loc="upper center", ncol=4, fontsize=12, frameon=True)
+fig.legend(labels, loc="upper center", ncol=3, fontsize=12, frameon=True)
 plt.tight_layout(rect=[0, 0, 1, 0.96])  # leave space for the legend
-plt.savefig("CD_nozzle_results.png", dpi=300, bbox_inches='tight')
 plt.show()
