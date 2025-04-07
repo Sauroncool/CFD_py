@@ -1,21 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 
 # Isentropic Relations
 def P0_P(M, γ=1.4):
     return (1 + 0.5 * (γ - 1) * M**2) ** (γ / (γ - 1))
-
-
 def T0_T(M, γ=1.4):
     return 1 + 0.5 * (γ - 1) * M**2
 
 
-def vectors(P, ρ, u, A):
+def create_state_vectors(P, ρ, u, A):
     E = P / (γ - 1) + 0.5 * ρ * u**2  # Total energy
     U = np.array([ρ * A, ρ * u * A, E * A])  # Conservative variables
     return U
-
 
 def extract(U, A):
     ρ = U[0, :] / A
@@ -23,7 +21,6 @@ def extract(U, A):
     E = U[2, :] / A
     P = (γ - 1) * (E - 0.5 * ρ * u**2)
     return ρ, u, E, P
-
 
 def FVS(U, A, γ = 1.4):
     ρ, u, E, P = extract(U, A)  # Extract primitive variables
@@ -54,7 +51,7 @@ def FVS(U, A, γ = 1.4):
 
 
 # Air Properties
-R = 287.0  # Specific gas constant for air
+R = 287.05  # Specific gas constant for air
 γ = 1.4  # Specific heat ratio for air
 
 # Domain of the CD nozzle
@@ -80,31 +77,29 @@ A = Area(x)  # Area distribution
 dA_dx = np.gradient(A, Δx)  # Derivative of area function
 
 # Initial conditions
-M = np.ones(Nx) * 0.01
+M = np.zeros_like(x)  # Mach number
 T = T0 / T0_T(M)
 P = P0 / P0_P(M)
 ρ = P / (R * T)
 u = np.sqrt(γ * R * T) * M
 a = np.sqrt(γ * R * T)  # Speed of sound
 
-U = vectors(P, ρ, u, A)  # Conservative variables
+U = create_state_vectors(P, ρ, u, A)  # Conservative variables
 
 # Courant number and iteration parameters
 CFL = 0.95
 tol = 1e-3
 iter_max = 50000
 
+
+start_time = time.time()
 for iter in range(iter_max):
     U_old = U.copy()  # Store new values for convergence check
-
-    lambda_max = np.max(np.abs(u) + a)  # Maximum wave speed
-    Δt = CFL * Δx / lambda_max  # Time step size
 
     # Boundary conditions
     # Inlet
     u[0] = u[1]
-    # T[0] as a function of u[0] and T0
-    T[0] = (2 * γ * R * T0 - (γ - 1) * u[0] ** 2) / (2 * γ * R)
+    T[0] = (2 * γ * R * T0 - (γ - 1) * u[0] ** 2) / (2 * γ * R) # T[0] as a function of u[0] and T0
     M[0] = u[0] / np.sqrt(γ * R * T[0])
     P[0] = P0 / P0_P(M[0])
     ρ[0] = P[0] / (R * T[0])
@@ -114,7 +109,14 @@ for iter in range(iter_max):
     ρ[-1] = ρ[-2]
     u[-1] = u[-2]
 
-    U = vectors(P, ρ, u, A)  # Update conservative variables
+    # First-order extrapolation gives better results
+    # ρ[-1] = 2 * ρ[-2] - ρ[-3]
+    # u[-1] = 2 * u[-2] - u[-3]
+
+    lambda_max = np.max(np.abs(u) + a)  # Maximum wave speed
+    Δt = CFL * Δx / lambda_max  # Time step size
+
+    U = create_state_vectors(P, ρ, u, A)  # Update conservative variables
 
     # Compute fluxes
     F_plus, F_minus = FVS(U, A)
@@ -144,16 +146,57 @@ for iter in range(iter_max):
         print("Maximum iterations reached without convergence.")
         break
 
-# Plot results
-fig, axes = plt.subplots(3, 1, figsize=(12, 8))
-for ax, data, ylabel in zip(
-    axes, [P / P0, T / T0, M], ["Pressure Ratio", "Temperature Ratio", "Mach Number"]
-):
-    ax.plot(x, data)
-    ax.set(xlabel="x (m)", ylabel=ylabel)
-    ax.grid()
+end_time = time.time()
+
+# Plot 1: Pressure Ratio
+plt.figure(figsize=(6, 4))
+plt.plot(x, P / P0)
+plt.xlabel("x (m)")
+plt.ylabel("Pressure Ratio (P/P0)")
+plt.grid()
 plt.tight_layout()
-plt.show()
+plt.savefig("pressure_ratio.png")
+plt.close()
+
+# Plot 2: Temperature Ratio
+plt.figure(figsize=(6, 4))
+plt.plot(x, T / T0)
+plt.xlabel("x (m)")
+plt.ylabel("Temperature Ratio (T/T0)")
+plt.grid()
+plt.tight_layout()
+plt.savefig("temperature_ratio.png")
+plt.close()
+
+# Plot 3: Mach Number
+plt.figure(figsize=(6, 4))
+plt.plot(x, M)
+plt.xlabel("x (m)")
+plt.ylabel("Mach Number")
+plt.grid()
+plt.tight_layout()
+plt.savefig("mach_number.png")
+plt.close()
+
+# Detect shock location: find index where Mach number drops from >1 to <1
+numerical_shock_index = None
+for i in range(1, Nx):
+    if M[i - 1] > 1 and M[i] < 1:
+        numerical_shock_index = i
+        break
+
+print("Numerical Solution:")
+print(f"Time taken: {end_time - start_time:.2f} seconds")
+print(f"Exit Mach number: {M[-1]:.2f}")
+if numerical_shock_index:
+    print(f"Mach number before the shock: {M[numerical_shock_index - 2]:.2f}") # Due to diffusive tendency of the scheme
+    print(f"Mach number after the shock: {M[numerical_shock_index + 1]:.2f}")   # Due to diffusive tendency of the scheme
+    print(f"Shock location at x = {x[numerical_shock_index]:.2f} m")
+else:
+    print("No shock detected in the solution.")
+
+
+# Analytical Solution
 
 from scipy.optimize import fsolve
 
@@ -172,12 +215,12 @@ def solve_mach_A_ratio(A_ratio, M_guess):
 def after_shock_mach_number(M1, γ=1.4):
     return np.sqrt((1 + ((γ - 1) / 2) * M1**2) / (γ * M1**2 - (γ - 1) / 2))
 
-def P2_P1(M1, γ=1.4):
-    return 1 + (2 * γ / (γ + 1)) * (M1**2 - 1)
 
-def P02_P01(M, γ=1.4):  # Total pressure ratio (Zucker and Biblarz)
-    M2 = after_shock_mach_number(M)
-    return P2_P1(M, γ) * ((1 + (γ - 1) / 2 * M2**2)/(1 + (γ - 1) / 2 * M**2))**(γ / (γ - 1))
+def P02_P01(M1, γ=1.4): # Total pressure ratio (Zucker and Biblarz)
+    term1 = (( (γ + 1) / 2 ) * M1**2) / (1 + ( (γ - 1) / 2 ) * M1**2)
+    term2 = ( (2 * γ / (γ + 1)) * M1**2 - (γ - 1) / (γ + 1) )
+    return (term1 ** (γ / (γ - 1))) * (term2 ** (1 / (1 - γ)))
+
 
 def solve_mach_P0_ratio(P0_ratio,M_guess):
     def eqn(M):
@@ -195,6 +238,9 @@ def Me_squared(PeAe_P0eAe_star, γ = 1.4): #(JD Anderson)
     term_2 = np.sqrt((1 / (γ - 1)**2) + (2 / (γ - 1)) * (2 / (γ + 1))**((γ + 1) / (γ - 1)) * (1/PeAe_P0eAe_star)**2)
     
     return term_1 + term_2
+
+
+print("Analytical Solution:")
 
 Me = np.sqrt(Me_squared(PeAe_P0eAe_star))  # Exit Mach number
 print(f"Exit Mach number:{Me:.2f}")
@@ -220,8 +266,8 @@ for i in range(throat_index):
 M_supersonic_case[throat_index] = 1.0
 
 # Supersonic Solution after the throat till the shock using Pe and P0
-for i in range(throat_index + 1, Nx):
-    M_supersonic_case[i] = solve_mach_A_ratio(A[i] / At, M_guess=2.0)
+for i in range(throat_index, Nx):
+    M_supersonic_case[i] = solve_mach_A_ratio(A[i] / At, M_guess=1.8)
 
 shock_index = np.where(M_supersonic_case > Mx)[0][0]
 
@@ -230,8 +276,9 @@ print(f"Shock location at x = {x[shock_index]:.2f} m")
 for i in range(shock_index):
     M_analytical[i] = M_supersonic_case[i]
 
-for i in range(shock_index, Nx):
-    M_analytical[i] = solve_mach_A_ratio(A[i] / At, M_guess=0.2)  # Subsonic guess after shock
+A_star_new = A[shock_index]/A_Astar(My)
+for i in range(shock_index , Nx):
+    M_analytical[i] = solve_mach_A_ratio(A[i] / A_star_new, M_guess=0.2)  # Subsonic guess after shock
 
 P_analytical = np.zeros_like(x)
 T_analytical = np.zeros_like(x)
@@ -249,7 +296,7 @@ M_subsonic_case = np.zeros_like(x)
 for i in range(throat_index):
     M_subsonic_case[i] = solve_mach_A_ratio(A[i] / At, M_guess=0.2)
 M_subsonic_case[throat_index] = 1.0
-for i in range(throat_index + 1, Nx):
+for i in range(throat_index, Nx):
     M_subsonic_case[i] = solve_mach_A_ratio(A[i] / At, M_guess=0.2)
 
 P_subsonic_case = P0 / P0_P(M_subsonic_case)

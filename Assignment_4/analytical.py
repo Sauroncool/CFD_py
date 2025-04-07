@@ -110,8 +110,9 @@ print(f"Shock location at x = {x[shock_index]:.2f} m")
 for i in range(shock_index):
     M_analytical[i] = M_supersonic_case[i]
 
+A_star_new = A[shock_index]/A_Astar(My)
 for i in range(shock_index, Nx):
-    M_analytical[i] = solve_mach_A_ratio(A[i] / At, M_guess=0.2)  # Subsonic guess after shock
+    M_analytical[i] = solve_mach_A_ratio(A[i] / A_star_new, M_guess=0.2)  # Subsonic guess after shock
 
 plt.figure(figsize=(10, 5))
 plt.plot(x, M_supersonic_case, label="Fully Expanded Supersonic Solution", linestyle='--')
