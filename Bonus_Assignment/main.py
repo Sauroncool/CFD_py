@@ -12,12 +12,11 @@ filename = "NACA63412 coordinates.csv"  # Use the new CSV format
 x_afl_pts, y_afl_pts = load_airfoil_data(filename)
 
 # Perform parametric cubic spline interpolation
-#x_afl_pts = x_afl_pts-0.5
-x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts, y_afl_pts)
+x_airfoil, y_airfoil = parametric_interpolation(x_afl_pts , y_afl_pts)
 plot_airfoil(x_afl_pts, y_afl_pts, x_airfoil, y_airfoil)
 
 # Generate the grid
-x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil, y_airfoil)
+x, y, ξ, η = grid_generation(num_xi, num_eta, x_airfoil - 0.5 , y_airfoil) # Offset the airfoil to center it in the grid
 plot_grid(x, y, "grid_tfi.png")
 
 x, y = GS_iteration(x, y, ξ, η, max_iter=50000, tolerance=1e-6)
