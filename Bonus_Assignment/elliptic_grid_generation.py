@@ -2,12 +2,27 @@
 import numpy as np
 
 
-def coeff(x, y, ξ, η):
+def coeff(x, y, ξ, η, Δξ, Δη):
     dx_dξ = np.gradient(x, ξ, axis=0)
     dy_dξ = np.gradient(y, ξ, axis=0)
+    
 
     dx_dη = np.gradient(x, η, axis=1)
     dy_dη = np.gradient(y, η, axis=1)
+
+    dx_dξ[0, 1:-1] = (
+        x[1, 1:-1] - x[-2, 1:-1]
+    ) / (2 * Δξ)  # Forward difference for the first row
+    dy_dξ[0, 1:-1] = (
+        y[1, 1:-1] - y[-2, 1:-1]
+    ) / (2 * Δξ)  # Forward difference for the first row
+
+    dx_dη[1:-1, 0] = (
+        x[1:-1, 1] - x[1:-1, -2]
+    ) / (2 * Δη)  # Forward difference for the first column
+    dy_dη[1:-1, 0] = (
+        y[1:-1, 1] - y[1:-1, -2]
+    ) / (2 * Δη)  # Forward difference for the first column
 
     a = dx_dη**2 + dy_dη**2
     b = dx_dξ * dx_dη + dy_dξ * dy_dη
@@ -20,7 +35,7 @@ def GS_iteration(x, y, ξ, η, max_iter=1000, tolerance=5e-4):
     Δξ = 1 / (len(ξ) - 1)
     Δη = 1 / (len(η) - 1)
     for iter in range(max_iter):
-        a, b, c = coeff(x, y, ξ, η)
+        a, b, c = coeff(x, y, ξ, η, Δξ, Δη)
         # Interior points update
         x_new[1:-1, 1:-1] = (
             a[1:-1, 1:-1] * (x[2:, 1:-1] + x[:-2, 1:-1]) / Δξ**2
@@ -92,7 +107,8 @@ if __name__ == "__main__":
     num_eta = 81
     R_outer = 10.0
     # Get airfoil coordinates
-    filename = "naca2412.dat"
+    #filename = "naca2412.dat"
+    filename = "NACA63412 coordinates.csv"  # Use the new CSV format
 
     # Load data
     x_afl_pts, y_afl_pts = load_airfoil_data(filename)

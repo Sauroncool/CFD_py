@@ -5,7 +5,8 @@ from tfi_square import grid_generation, plot_grid
 num_xi = 40
 num_eta = 40
 # Get airfoil coordinates
-filename = "naca2412.dat"
+#filename = "naca2412.dat"
+filename = "NACA63412 coordinates.csv"  # Use the new CSV format
 
 # Load data
 x_afl_pts, y_afl_pts = load_airfoil_data(filename)

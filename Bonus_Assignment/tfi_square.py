@@ -87,7 +87,9 @@ def plot_grid(x, y, name):
 if __name__ == "__main__":
     num_xi = 303
     num_eta = 81
-    filename = "naca2412.dat"
+    # Get airfoil coordinates
+    #filename = "naca2412.dat"
+    filename = "NACA63412 coordinates.csv"  # Use the new CSV format
 
     x, y = load_airfoil_data(filename)
     x_airfoil, y_airfoil = parametric_interpolation(x, y)
