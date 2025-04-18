@@ -13,7 +13,7 @@ U0 = 1.0  # Lid velocity
 
 ν = U0 * L / Re  # Kinematic viscosity (nu)
 
-iter_max = 5000  # Maximum number of iterations
+iter_max = 50000  # Maximum number of iterations
 tol = 1e-8       # Convergence tolerance
 
 σ_c = 0.4  # Courant number for convection (sigma_c)
@@ -94,23 +94,6 @@ def compute_time_step(u, v, dx, dy):
     dt_d = σ_d * (1.0 / (2.0 * ν)) * (dx**2 * dy**2) / (dx**2 + dy**2)
     return min(dt_c, dt_d)
 
-# def vorticity_transport_equation(ψ, ω, dx, dy, dt):
-#     u, v = compute_velocity(ψ, dx, dy)
-#     ω_new = np.copy(ω)
-
-#     # # Compute convection term
-#     # convection = u[1:-1, 1:-1] * (ω[1:-1, 2:] - ω[1:-1, :-2]) / (2 * dy) + \
-#     #             v[1:-1, 1:-1] * (ω[2:, 1:-1] - ω[:-2, 1:-1]) / (2 * dx)
-
-    
-
-#     # Compute diffusion term
-#     diffusion = (ω[2:, 1:-1] - 2 * ω[1:-1, 1:-1] + ω[:-2, 1:-1]) / dx**2 + \
-#                 (ω[1:-1, 2:] - 2 * ω[1:-1, 1:-1] + ω[1:-1, :-2]) / dy**2
-
-#     # Update vorticity
-#     ω_new[1:-1, 1:-1] = ω[1:-1, 1:-1] + dt * (ν * diffusion - convection)
-#     return ω_new
 
 def vorticity_transport_equation(ψ, ω, dx, dy, dt):
     u, v = compute_velocity(ψ, dx, dy)
@@ -238,8 +221,7 @@ plt.savefig('v_velocity_mid_horizontal_comparison.png')
 plt.show()
 
 
-# # u velocity at mid vertical line
-# Load Ghia et al. data
+# u velocity at mid vertical line
 ghia_data_u = pd.read_excel("Mid vertical line (x velocity) Ghia Ghia.xlsx")
 x_ghia_u = ghia_data_u.iloc[:, 0].values  # y coordinate
 u_ghia = ghia_data_u.iloc[:, 1].values  # u velocity
@@ -268,6 +250,8 @@ plt.legend()
 plt.savefig('log_error_history.png')
 plt.show()
 
+
+# Uncomment the following lines to create an animation of the streamlines and stream function contours
 # # Animation
 # from matplotlib.animation import FuncAnimation
 
