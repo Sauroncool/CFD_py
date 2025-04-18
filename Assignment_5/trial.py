@@ -13,7 +13,7 @@ U0 = 1.0  # Lid velocity
 
 ν = U0 * L / Re  # Kinematic viscosity (nu)
 
-iter_max = 2000  # Maximum number of iterations
+iter_max = 50000  # Maximum number of iterations
 tol = 1e-8       # Convergence tolerance
 
 σ_c = 0.4  # Courant number for convection (sigma_c)
@@ -31,6 +31,7 @@ v = np.zeros((num_x, num_y))       # Velocity in y direction
 u_history = np.zeros((iter_max, num_x, num_y))  # Velocity x-component history
 v_history = np.zeros((iter_max, num_x, num_y))  # Velocity y-component history
 time_history = np.zeros(iter_max)
+error_history = np.zeros((iter_max,2))
 
 
 def boundary_conditions(ψ, ω, dx, dy):
@@ -44,30 +45,24 @@ def boundary_conditions(ψ, ω, dx, dy):
     ω[-1, 1:-1] = -2.0 * (ψ[-2, 1:-1] - ψ[-1, 1:-1]) / (dx ** 2)
     return ω
 
-
-def solve_stream_function(ψ, ω, dx, dy, max_iter=1000, tolerance=1e-2):
-    NX, NY = ψ.shape
-    beta = dx / dy
-    beta_sq = beta * beta
-    denom = 2.0 * (1.0 + beta_sq)
+# Write solve_stream_function in vectorized form
+def solve_stream_function(ψ, ω, dx, dy, max_iter=4000, tolerance=1e-2):
+    β = dx / dy
+    β_sq = β * β
 
     iter = 0
     max_residual = 1.0
+    β
 
     while max_residual > tolerance and iter < max_iter:
-        max_residual = 0.0
-        for i in range(1, NX - 1):
-            for j in range(1, NY - 1):
-                ψ_old = ψ[i, j]
-                ψ[i, j] = (
-                    (ψ[i + 1, j] + ψ[i - 1, j]) +
-                    beta_sq * (ψ[i, j + 1] + ψ[i, j - 1]) +
-                    dx * dx * ω[i, j]
-                ) / denom
+        ψ_old = np.copy(ψ)
+        ψ[1:-1, 1:-1] = (
+            (ψ[2:, 1:-1] + ψ[:-2, 1:-1]) +
+            β_sq * (ψ[1:-1, 2:] + ψ[1:-1, :-2]) +
+            dx * dx * ω[1:-1, 1:-1]
+        ) / (2.0 * (1.0 + β_sq))
 
-                residual = abs(ψ[i, j] - ψ_old)
-                if residual > max_residual:
-                    max_residual = residual
+        max_residual = np.max(np.abs(ψ - ψ_old))
 
         iter += 1
     return ψ
@@ -99,22 +94,51 @@ def compute_time_step(u, v, dx, dy):
     dt_d = σ_d * (1.0 / (2.0 * ν)) * (dx**2 * dy**2) / (dx**2 + dy**2)
     return min(dt_c, dt_d)
 
-# vorticity_transport_equation function in vectorized form
+
 def vorticity_transport_equation(ψ, ω, dx, dy, dt):
     u, v = compute_velocity(ψ, dx, dy)
     ω_new = np.copy(ω)
 
-    # Compute convection term
-    convection = u[1:-1, 1:-1] * (ω[1:-1, 2:] - ω[1:-1, :-2]) / (2 * dy) + \
-                v[1:-1, 1:-1] * (ω[2:, 1:-1] - ω[:-2, 1:-1]) / (2 * dx)
+    I, J = ω.shape
 
-    # Compute diffusion term
+    convection = np.zeros_like(ω)
+
+    for i in range(1, I-1):
+        for j in range(1, J-1):
+            # Convection term
+            if u[i, j] > 0:
+                if i >= 2:
+                    dw_dx = (3 * ω[i, j] - 4 * ω[i-1, j] + ω[i-2, j]) / (2 * dx)
+                else:
+                    dw_dx = (ω[i, j] - ω[i-1, j]) / dx
+            else:
+                if i <= I - 3:
+                    dw_dx = (-3 * ω[i, j] + 4 * ω[i+1, j] - ω[i+2, j]) / (2 * dx)
+                else:
+                    dw_dx = (ω[i+1, j] - ω[i, j]) / dx
+
+            if v[i, j] > 0:
+                if j >= 2:
+                    dw_dy = (3 * ω[i, j] - 4 * ω[i, j-1] + ω[i, j-2]) / (2 * dy)
+                else:
+                    dw_dy = (ω[i, j] - ω[i, j-1]) / dy
+            else:
+                if j <= J - 3:
+                    dw_dy = (-3 * ω[i, j] + 4 * ω[i, j+1] - ω[i, j+2]) / (2 * dy)
+                else:
+                    dw_dy = (ω[i, j+1] - ω[i, j]) / dy
+
+            convection[i, j] = u[i, j] * dw_dx + v[i, j] * dw_dy
+
+    # Diffusion term
     diffusion = (ω[2:, 1:-1] - 2 * ω[1:-1, 1:-1] + ω[:-2, 1:-1]) / dx**2 + \
                 (ω[1:-1, 2:] - 2 * ω[1:-1, 1:-1] + ω[1:-1, :-2]) / dy**2
 
     # Update vorticity
-    ω_new[1:-1, 1:-1] = ω[1:-1, 1:-1] + dt * (ν * diffusion - convection)
+    ω_new[1:-1, 1:-1] = ω[1:-1, 1:-1] + dt * (ν * diffusion - convection[1:-1, 1:-1])
+
     return ω_new
+
 
 
 iter = 0
@@ -140,6 +164,7 @@ for iter in range(iter_max):
 
     rms_u = np.sqrt(np.sum((u - u_old)**2) / (num_x * num_y))
     rms_v = np.sqrt(np.sum((v - v_old)**2) / (num_x * num_y))
+    error_history[iter] = [rms_u, rms_v]
 
     if iter % 10 == 0:
         print(f"Iteration {iter}: RMS u = {rms_u:.8f}, RMS v = {rms_v:.8f}, Time = {time:.3f} s")
@@ -173,7 +198,7 @@ plt.xlabel('x')
 plt.ylabel('y')
 plt.axis('equal')
 plt.grid(True)
-plt.savefig('streamlines.png')
+plt.savefig('streamlines.png', dpi=300)
 plt.show()
 
 # Plot v at mid horizontal line
@@ -192,32 +217,41 @@ plt.xlabel('x')
 plt.ylabel('v velocity')
 plt.grid(True)
 plt.legend()
-plt.savefig('v_velocity_mid_horizontal_comparison.png')
+plt.savefig('v_velocity_mid_horizontal_comparison.png', dpi=300)
 plt.show()
 
 
-# # u velocity at mid vertical line
-# Load Ghia et al. data
+# u velocity at mid vertical line
 ghia_data_u = pd.read_excel("Mid vertical line (x velocity) Ghia Ghia.xlsx")
 x_ghia_u = ghia_data_u.iloc[:, 0].values  # y coordinate
 u_ghia = ghia_data_u.iloc[:, 1].values  # u velocity
 
 # Plotting comparison
 plt.figure(figsize=(8, 6))
-plt.scatter(u_ghia, x_ghia_u, label='Ghia et al. (Literature)', color='red', marker='o')
-plt.plot(u[num_x//2, :], y, label='Computed u velocity', color='blue')
+plt.scatter(x_ghia_u, u_ghia, label='Ghia et al. (Literature)', color='red', marker='o')
+plt.plot(y, u[num_x//2, :], label='Computed u velocity', color='blue')
 plt.title('u velocity along mid-vertical line (y-axis)')
 plt.xlabel('u velocity')
 plt.ylabel('y')
 plt.grid(True)
 plt.legend()
-plt.savefig('u_velocity_mid_vertical_comparison.png')
+plt.savefig('u_velocity_mid_vertical_comparison.png', dpi=300)
+plt.show()
+
+# Plot log error history
+plt.figure(figsize=(8, 6))
+plt.plot(np.log10(error_history[:iter, 0]), label='RMS u velocity')
+plt.plot(np.log10(error_history[:iter, 1]), label='RMS v velocity')
+plt.title('Log of RMS velocity error history')
+plt.xlabel('Iteration')
+plt.ylabel('Log10(RMS velocity)')
+plt.grid(True)
+plt.legend()
+plt.savefig('log_error_history.png', dpi=300)
 plt.show()
 
 
-
-
-
+# Uncomment the following lines to create an animation of the streamlines and stream function contours
 # # Animation
 # from matplotlib.animation import FuncAnimation
 
