@@ -211,9 +211,9 @@ def update(frame):
     ax.axis('equal')
     ax.grid(True)
 
-ani = FuncAnimation(fig, update, frames=frames, repeat=False)
-ani.save('streamlines_real_time.mp4', writer='ffmpeg', fps=10)  # or dynamic fps
-
+ani = FuncAnimation(fig, update, frames=frames, interval=20)
+# Save the animation mp4
+ani.save('streamlines_animation.mp4', writer='ffmpeg', fps=10)
 
 
 
